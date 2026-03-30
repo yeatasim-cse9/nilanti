@@ -16,25 +16,25 @@ const MoneyBackGuarantee = () => {
       <div className="container">
         <div className="relative overflow-hidden bg-white border border-gray-200 p-8 md:p-12" style={{ borderRadius: "8px" }}>
 
-          <div className="relative flex flex-col md:flex-row items-center gap-6 md:gap-10">
+          <div className="relative flex flex-col items-center text-center gap-6 md:gap-8 max-w-4xl mx-auto">
             {/* Icon */}
-            <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-              <Shield className="w-10 h-10 md:w-14 md:h-14 text-gray-900" />
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+              <Shield className="w-10 h-10 md:w-12 md:h-12 text-gray-900" />
             </div>
 
             {/* Content */}
-            <div className="flex-1 text-center md:text-left">
+            <div className="flex-1">
               <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-4 leading-tight tracking-tight font-bengali">
                 {title || "পছন্দ না হলে ১০০% টাকা ফেরত!"}
               </h2>
-              <p className="text-muted-foreground text-sm md:text-base mb-8 max-w-xl leading-relaxed font-bengali">
+              <p className="text-muted-foreground text-sm md:text-base mb-8 max-w-2xl mx-auto leading-relaxed font-bengali bg-gray-50/50 p-4 rounded-lg border border-gray-100">
                 {content.description_bn || "আপনার সন্তুষ্টিই আমাদের সবচেয়ে বড় লক্ষ্য। প্রোডাক্ট হাতে পেয়ে পছন্দ না হলে কোনো প্রশ্ন ছাড়াই আমরা আপনার পুরো টাকা ফেরত দেব।"}
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Link to={content.primary_button_link || "/products"}>
                   <Button
                     size="lg"
-                    className="bg-gray-900 text-white hover:bg-gray-800 shadow-md font-bengali"
+                    className="bg-gray-900 text-white hover:bg-gray-800 shadow-lg px-8 font-bengali min-w-[200px]"
                     style={{ borderRadius: "8px" }}
                   >
                     এখনই কেনাকাটা করুন
@@ -45,7 +45,7 @@ const MoneyBackGuarantee = () => {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="border-gray-300 text-gray-900 hover:bg-gray-100 hover:text-gray-900 font-bengali"
+                    className="border-gray-300 text-gray-900 hover:bg-gray-100 hover:text-gray-900 px-8 font-bengali min-w-[200px]"
                     style={{ borderRadius: "8px" }}
                   >
                     রিটার্ন পলিসি দেখুন
