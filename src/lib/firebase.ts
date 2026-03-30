@@ -12,6 +12,11 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
+// Safety check for Firebase initialization
+if (!firebaseConfig.apiKey) {
+  console.error("❌ Firebase API Key is missing! Please check your environment variables.");
+}
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
