@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/api-bdcourier/(.*)",
+      "destination": "https://api.bdcourier.com/$1"
+    },
+    {
+      "source": "/api-steadfast/(.*)",
+      "destination": "https://portal.packzy.com/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

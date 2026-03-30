@@ -1,0 +1,275 @@
+@import "tailwindcss";
+
+@config "../tailwind.config.ts";
+
+
+/* অর্গানিক ই-কমার্স ডিজাইন সিস্টেম
+   Natural, earthy organic color palette with Bangla typography
+*/
+
+@layer base {
+  :root {
+    /* Nilanti Design System - Clean, Trustworthy Blue and Radiant Yellow */
+    --primary: 231 69% 33%; /* Nilanti Deep Blue #1e3a8a */
+    --primary-foreground: 0 0% 100%;
+
+    /* Premium Blue Accent - For emphasis and icons */
+    --accent: 231 69% 33%; 
+    --accent-foreground: 0 0% 100%;
+
+    /* Brand Yellow - For secondary CTAs and highlights */
+    --brand-yellow: 45 93% 47%; /* Radiant Yellow #f59e0b */
+
+    /* Clean White Background */
+    --background: 0 0% 100%;
+    --foreground: 231 69% 10%; /* Very dark blue for text */
+
+    --secondary: 0 0% 97%; /* Very light gray */
+    --secondary-foreground: 231 69% 33%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 231 69% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 231 69% 10%;
+
+    /* Muted */
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 45%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders and inputs - soft and elegant */
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 231 69% 33%;
+
+    --radius: 0.5rem; /* Slightly rounded corners for a premium, friendly feel */
+
+    /* Custom Brand Colors */
+    --brand-main: 231 69% 33%;
+    --brand-accent: 45 93% 47%;
+
+    /* Shadows - premium soft elevations */
+    --shadow-soft: 0 10px 30px -10px rgba(30,58,138,0.1);
+    --shadow-card: 0 4px 20px -5px rgba(0,0,0,0.05);
+    --shadow-hover: 0 25px 50px -12px rgba(30,58,138,0.15);
+    --shadow-glow: 0 0 20px -5px hsl(var(--primary) / 0.4);
+  }
+
+  .dark {
+    --primary: 0 0% 100%; /* White in dark mode */
+    --primary-foreground: 231 69% 33%;
+
+    --accent: 45 93% 47%; 
+    --accent-foreground: 0 0% 100%;
+
+    --background: 231 69% 5%; /* Deepest blue-black */
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 96%;
+
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 96%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 64%;
+
+    --destructive: 0 60% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 221 83% 53%; /* Blue */
+
+    --organic-green: 221 83% 53%; /* Map to blue */
+    --organic-green-light: 221 83% 63%;
+    --organic-green-dark: 221 83% 43%;
+    --earth-brown: 0 0% 20%;
+    --cream: 0 0% 10%;
+    --cream-dark: 0 0% 8%;
+    --terracotta: 221 83% 53%;
+    --sage: 0 0% 40%;
+    --moss: 0 0% 30%;
+
+    --sidebar-background: 0 0% 5%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 221 83% 53%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border) / 0.1);
+  }
+
+  ::selection {
+    background-color: hsl(var(--accent) / 0.2);
+    color: hsl(var(--primary));
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    transition-property: background-color, color;
+    transition-duration: 300ms;
+    font-family: 'Anek Bangla', 'Outfit', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Anek Bangla', 'Outfit', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: hsl(var(--primary));
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: hsl(var(--muted));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--primary) / 0.3);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/50;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar utility */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .gradient-organic {
+    background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary)));
+  }
+
+  .gradient-earth {
+    background: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--accent)));
+  }
+
+  .shadow-organic {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-organic-hover {
+    box-shadow: var(--shadow-hover);
+  }
+
+  /* Sliding animation for notification bar */
+  @keyframes slide-left {
+    0% {
+      transform: translateX(100%);
+    }
+
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+
+  .animate-slide-left {
+    animation: slide-left 20s linear infinite;
+  }
+
+  /* Fade in animation */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  /* PREMIUM UTILITIES */
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  }
+
+  .glass-dark {
+    @apply bg-black/20 backdrop-blur-2xl border border-white/5;
+  }
+
+  .glow-accent {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .glow-accent-hover:hover {
+    box-shadow: 0 0 30px -5px hsl(var(--accent) / 0.6);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 15px hsl(var(--accent) / 0.4);
+  }
+
+  /* STAGGERED FADE */
+  .stagger-children>* {
+    opacity: 0;
+    animation: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .stagger-children>*:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+
+  .stagger-children>*:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .stagger-children>*:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+
+  .stagger-children>*:nth-child(4) {
+    animation-delay: 0.4s;
+  }
+
+  .stagger-children>*:nth-child(5) {
+    animation-delay: 0.5s;
+  }
+
+  .stagger-children>*:nth-child(6) {
+    animation-delay: 0.6s;
+  }
+}
