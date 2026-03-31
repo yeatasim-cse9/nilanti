@@ -26,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
+import { useCheckBDCourierConnection } from "@/hooks/useBDCourier";
 
 // ─── Helper: Password-style input with show/hide ───────────────────────────
 const SecretInput = ({
@@ -114,6 +115,7 @@ const StatusBadge = ({ configured }: { configured: boolean }) => (
 const AdminIntegrations = () => {
   const { data: settings, isLoading } = useSiteSettings();
   const updateSettings = useUpdateSiteSettings();
+  const testBDCourierConnection = useCheckBDCourierConnection();
 
   const [form, setForm] = useState({
     // Steadfast
@@ -348,7 +350,32 @@ const AdminIntegrations = () => {
                   <p>৫. ফ্রড চেকে সাকসেস/ক্যান্সেল রেশিও দেখানো হয় যেটা অর্ডার অ্যাপ্রুভের সময় সাহায্য করে</p>
                 </InstructionBox>
 
-                <div className="flex justify-end pt-2">
+                <div className="flex items-center justify-between gap-4 pt-2">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        testBDCourierConnection.mutate(undefined, {
+                          onSuccess: (data) => {
+                            if (data.status === "success" || data.success) {
+                              toast.success("BD Courier-এর সাথে সফলভাবে কানেক্ট করা হয়েছে!");
+                            } else {
+                              toast.error(`কানেকশন কাজ করছে না: ${data.message || "Unknown error"}`);
+                            }
+                          },
+                          onError: (err: any) => {
+                            toast.error(`কানেকশন এরর: ${err.message}`);
+                          }
+                        });
+                      }}
+                      disabled={testBDCourierConnection.isPending}
+                      className="gap-2"
+                    >
+                      {testBDCourierConnection.isPending ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Shield className="h-3 w-3 text-green-500" />}
+                      {testBDCourierConnection.isPending ? "চেক করা হচ্ছে..." : "কানেকশন চেক করুন"}
+                    </Button>
+                  </div>
                   <Button
                     size="sm"
                     className="gap-1.5"
@@ -648,7 +675,7 @@ const AdminIntegrations = () => {
                     <li><strong>AddToCart</strong> — কার্টে যোগ করা</li>
                     <li><strong>Purchase</strong> — অর্ডার সম্পন্ন (Advanced Matching সহ)</li>
                   </ul>
-                  <p className="pt-1">⚠️ <strong>গুরুত্বপূর্ণ:</strong> Pixel ID পরিবর্তন করলে <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-[10px]">index.html</code> ফাইলেও ম্যানুয়ালি আপডেট করতে হবে কারণ সেখানে base Pixel কোড আছে।</p>
+                  <p className="pt-1">✨ <strong>টিপস:</strong> আপনার Pixel ID এখন সম্পূর্ণ ডায়নামিক। এটি সেভ করার সাথে সাথেই পুরো সাইটে কাজ শুরু করে দেবে।</p>
                 </InstructionBox>
 
                 <div className="flex justify-end pt-2">

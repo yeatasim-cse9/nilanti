@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useSiteSettings } from "./useAdminData";
 
-const BD_COURIER_API_KEY = import.meta.env.VITE_BD_COURIER_API_KEY || "";
 const BASE_URL = "/api-bdcourier";
 
 interface CourierData {
@@ -37,13 +37,17 @@ export interface ParsedCourierResult {
 }
 
 export const useCourierCheck = () => {
+  const { data: settings } = useSiteSettings();
+
   return useMutation({
     mutationFn: async (phone: string): Promise<ParsedCourierResult> => {
+      const apiKey = settings?.bdcourier_api_key || import.meta.env.VITE_BD_COURIER_API_KEY || "";
+      
       const response = await fetch(`${BASE_URL}/courier-check`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${BD_COURIER_API_KEY}`,
+          'Authorization': `Bearer ${apiKey}`,
           'Accept': 'application/json',
         },
         body: JSON.stringify({ phone })
@@ -99,12 +103,16 @@ export const useCourierCheck = () => {
 };
 
 export const useCheckBDCourierConnection = () => {
+  const { data: settings } = useSiteSettings();
+
   return useMutation({
     mutationFn: async () => {
+      const apiKey = settings?.bdcourier_api_key || import.meta.env.VITE_BD_COURIER_API_KEY || "";
+
       const response = await fetch(`${BASE_URL}/check-connection`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${BD_COURIER_API_KEY}`
+          'Authorization': `Bearer ${apiKey}`
         }
       });
       
@@ -127,3 +135,4 @@ export const useCheckBDCourierConnection = () => {
     },
   });
 };
+

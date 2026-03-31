@@ -20,6 +20,7 @@ import {
   type DeliveryStatus,
   DELIVERY_STATUSES,
 } from "@/lib/steadfast";
+import { useSiteSettings } from "@/hooks/useAdminData";
 
 // ─── Order Interface ──────────────────────────────────────────────────────────
 
@@ -54,6 +55,7 @@ function normalizePhone(phone?: string): string {
 
 export const useSendToSteadfast = () => {
   const queryClient = useQueryClient();
+  const { data: settings } = useSiteSettings();
 
   return useMutation({
     mutationFn: async (payload_params: any) => {
@@ -91,7 +93,12 @@ export const useSendToSteadfast = () => {
         note: order.notes || "",
       };
 
-      const result = await createSteadfastOrder(payload);
+      const config = {
+        apiKey: settings?.steadfast_api_key || import.meta.env.VITE_STEADFAST_API_KEY,
+        secretKey: settings?.steadfast_secret_key || import.meta.env.VITE_STEADFAST_SECRET_KEY,
+      };
+
+      const result = await createSteadfastOrder(payload, config);
 
       if (result.status === 200 && result.consignment) {
         // Update order in Firestore
@@ -135,6 +142,7 @@ export const useSendToSteadfast = () => {
 
 export const useBulkSendToSteadfast = () => {
   const queryClient = useQueryClient();
+  const { data: settings } = useSiteSettings();
 
   return useMutation({
     mutationFn: async (orders: Order[]) => {
@@ -165,7 +173,12 @@ export const useBulkSendToSteadfast = () => {
         throw new Error("কোনো বৈধ অর্ডার পাওয়া যায়নি (ফোন নম্বর চেক করুন)");
       }
 
-      const results = await createBulkSteadfastOrders(items);
+      const config = {
+        apiKey: settings?.steadfast_api_key || import.meta.env.VITE_STEADFAST_API_KEY,
+        secretKey: settings?.steadfast_secret_key || import.meta.env.VITE_STEADFAST_SECRET_KEY,
+      };
+
+      const results = await createBulkSteadfastOrders(items, config);
 
       // Update successful consignments in Firestore
       let successCount = 0;
@@ -204,6 +217,8 @@ export const useBulkSendToSteadfast = () => {
 // ─── 3. Check Delivery Status ─────────────────────────────────────────────────
 
 export const useCheckSteadfastStatus = () => {
+  const { data: settings } = useSiteSettings();
+
   return useMutation({
     mutationFn: async ({
       consignmentId,
@@ -215,12 +230,18 @@ export const useCheckSteadfastStatus = () => {
       trackingCode?: string;
     }) => {
       let result;
+
+      const config = {
+        apiKey: settings?.steadfast_api_key || import.meta.env.VITE_STEADFAST_API_KEY,
+        secretKey: settings?.steadfast_secret_key || import.meta.env.VITE_STEADFAST_SECRET_KEY,
+      };
+
       if (consignmentId) {
-        result = await checkSteadfastStatus(consignmentId, "cid");
+        result = await checkSteadfastStatus(consignmentId, "cid", config);
       } else if (invoiceNumber) {
-        result = await checkSteadfastStatus(invoiceNumber, "invoice");
+        result = await checkSteadfastStatus(invoiceNumber, "invoice", config);
       } else if (trackingCode) {
-        result = await checkSteadfastStatus(trackingCode, "trackingcode");
+        result = await checkSteadfastStatus(trackingCode, "trackingcode", config);
       } else {
         throw new Error("consignment ID, invoice, বা tracking code দিতে হবে");
       }
@@ -244,11 +265,17 @@ export const useCheckSteadfastStatus = () => {
 // ─── 4. Steadfast Balance ─────────────────────────────────────────────────────
 
 export const useSteadfastBalance = () => {
+  const { data: settings } = useSiteSettings();
+
   return useQuery({
-    queryKey: ["steadfast-balance"],
+    queryKey: ["steadfast-balance", settings?.steadfast_api_key],
     queryFn: async () => {
       try {
-        const result = await getSteadfastBalance();
+        const config = {
+          apiKey: settings?.steadfast_api_key || import.meta.env.VITE_STEADFAST_API_KEY,
+          secretKey: settings?.steadfast_secret_key || import.meta.env.VITE_STEADFAST_SECRET_KEY,
+        };
+        const result = await getSteadfastBalance(config);
         if (result.status === 200) {
           return result.current_balance as number;
         }
@@ -268,10 +295,15 @@ export const useSteadfastBalance = () => {
 
 export const useCreateReturnRequest = () => {
   const queryClient = useQueryClient();
+  const { data: settings } = useSiteSettings();
 
   return useMutation({
     mutationFn: async (payload: CreateReturnPayload) => {
-      return createReturnRequest(payload);
+      const config = {
+        apiKey: settings?.steadfast_api_key || import.meta.env.VITE_STEADFAST_API_KEY,
+        secretKey: settings?.steadfast_secret_key || import.meta.env.VITE_STEADFAST_SECRET_KEY,
+      };
+      return createReturnRequest(payload, config);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["steadfast-returns"] });
@@ -284,11 +316,17 @@ export const useCreateReturnRequest = () => {
 };
 
 export const useSteadfastReturns = () => {
+  const { data: settings } = useSiteSettings();
+
   return useQuery({
-    queryKey: ["steadfast-returns"],
+    queryKey: ["steadfast-returns", settings?.steadfast_api_key],
     queryFn: async () => {
       try {
-        return await getReturnRequests();
+        const config = {
+          apiKey: settings?.steadfast_api_key || import.meta.env.VITE_STEADFAST_API_KEY,
+          secretKey: settings?.steadfast_secret_key || import.meta.env.VITE_STEADFAST_SECRET_KEY,
+        };
+        return await getReturnRequests(config);
       } catch (error) {
         console.error("Steadfast returns error:", error);
         return [];
@@ -300,11 +338,17 @@ export const useSteadfastReturns = () => {
 };
 
 export const useSteadfastReturnDetail = (id: number | null) => {
+  const { data: settings } = useSiteSettings();
+
   return useQuery({
-    queryKey: ["steadfast-return", id],
+    queryKey: ["steadfast-return", id, settings?.steadfast_api_key],
     queryFn: async () => {
       if (!id) return null;
-      return getReturnRequest(id);
+      const config = {
+        apiKey: settings?.steadfast_api_key || import.meta.env.VITE_STEADFAST_API_KEY,
+        secretKey: settings?.steadfast_secret_key || import.meta.env.VITE_STEADFAST_SECRET_KEY,
+      };
+      return getReturnRequest(id, config);
     },
     enabled: !!id,
     staleTime: 2 * 60 * 1000,
@@ -314,11 +358,17 @@ export const useSteadfastReturnDetail = (id: number | null) => {
 // ─── 6. Payments ──────────────────────────────────────────────────────────────
 
 export const useSteadfastPayments = () => {
+  const { data: settings } = useSiteSettings();
+
   return useQuery({
-    queryKey: ["steadfast-payments"],
+    queryKey: ["steadfast-payments", settings?.steadfast_api_key],
     queryFn: async () => {
       try {
-        return await getPayments();
+        const config = {
+          apiKey: settings?.steadfast_api_key || import.meta.env.VITE_STEADFAST_API_KEY,
+          secretKey: settings?.steadfast_secret_key || import.meta.env.VITE_STEADFAST_SECRET_KEY,
+        };
+        return await getPayments(config);
       } catch (error) {
         console.error("Steadfast payments error:", error);
         return [];
@@ -330,11 +380,17 @@ export const useSteadfastPayments = () => {
 };
 
 export const useSteadfastPaymentDetail = (paymentId: number | null) => {
+  const { data: settings } = useSiteSettings();
+
   return useQuery({
-    queryKey: ["steadfast-payment", paymentId],
+    queryKey: ["steadfast-payment", paymentId, settings?.steadfast_api_key],
     queryFn: async () => {
       if (!paymentId) return null;
-      return getPaymentById(paymentId);
+      const config = {
+        apiKey: settings?.steadfast_api_key || import.meta.env.VITE_STEADFAST_API_KEY,
+        secretKey: settings?.steadfast_secret_key || import.meta.env.VITE_STEADFAST_SECRET_KEY,
+      };
+      return getPaymentById(paymentId, config);
     },
     enabled: !!paymentId,
     staleTime: 2 * 60 * 1000,
@@ -344,11 +400,17 @@ export const useSteadfastPaymentDetail = (paymentId: number | null) => {
 // ─── 7. Police Stations ──────────────────────────────────────────────────────
 
 export const useSteadfastPoliceStations = () => {
+  const { data: settings } = useSiteSettings();
+
   return useQuery({
-    queryKey: ["steadfast-police-stations"],
+    queryKey: ["steadfast-police-stations", settings?.steadfast_api_key],
     queryFn: async () => {
       try {
-        return await getPoliceStations();
+        const config = {
+          apiKey: settings?.steadfast_api_key || import.meta.env.VITE_STEADFAST_API_KEY,
+          secretKey: settings?.steadfast_secret_key || import.meta.env.VITE_STEADFAST_SECRET_KEY,
+        };
+        return await getPoliceStations(config);
       } catch (error) {
         console.error("Steadfast police stations error:", error);
         return [];

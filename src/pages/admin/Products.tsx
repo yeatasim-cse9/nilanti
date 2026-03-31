@@ -306,10 +306,10 @@ const AdminProducts = () => {
         <TabsContent value={activeTab} className="mt-0">
           <div className="bg-white/60 backdrop-blur-xl border border-white/60 rounded-[32px] shadow-2xl shadow-primary/[0.02] overflow-hidden">
             <div className="overflow-x-auto overflow-y-auto max-h-[700px] no-scrollbar">
-              <Table>
+              <Table className="table-responsive-stack">
                 <TableHeader className="bg-slate-50/50 sticky top-0 z-10">
                   <TableRow className="hover:bg-transparent border-slate-100">
-                    <TableHead className="w-12 pl-6">
+                    <TableHead className="w-12 pl-6 hidden md:table-cell">
                       <Checkbox 
                         checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
                         onCheckedChange={toggleSelectAll}
@@ -321,7 +321,7 @@ const AdminProducts = () => {
                     <TableHead className="text-right font-black text-[10px] uppercase tracking-normal text-slate-500">Price (৳)</TableHead>
                     <TableHead className="text-center font-black text-[10px] uppercase tracking-normal text-slate-500">Inventory</TableHead>
                     <TableHead className="text-center font-black text-[10px] uppercase tracking-normal text-slate-500 uppercase">Visibility</TableHead>
-                    <TableHead className="text-right pr-6 font-black text-[10px] uppercase tracking-normal text-slate-500">Metrics</TableHead>
+                    <TableHead className="text-right pr-6 font-black text-[10px] uppercase tracking-normal text-slate-500">Metrics Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -338,15 +338,15 @@ const AdminProducts = () => {
                   ) : (
                     filteredProducts.map((product: any) => (
                       <TableRow key={product.id} className="hover:bg-slate-50/80 transition-all border-slate-50 group">
-                        <TableCell className="pl-6">
+                        <TableCell className="pl-6 hidden md:table-cell" data-label="Selection">
                           <Checkbox 
                             checked={selectedProducts.includes(product.id)}
                             onCheckedChange={() => toggleProductSelection(product.id)}
                             className="rounded-md border-slate-300 data-[state=checked]:bg-primary"
                           />
                         </TableCell>
-                        <TableCell className="py-6">
-                          <div className="flex items-center gap-5">
+                        <TableCell className="py-6" data-label="Product">
+                          <div className="flex items-center md:justify-start justify-end gap-5">
                             <div className="w-16 h-20 rounded-2xl overflow-hidden bg-slate-100 ring-4 ring-white shadow-xl flex-shrink-0 relative group-hover:ring-primary/5 transition-all">
                               {product.images?.[0] ? (
                                 <img
@@ -363,9 +363,9 @@ const AdminProducts = () => {
                                 <div className="absolute top-1 right-1 h-3 w-3 bg-yellow-400 rounded-full border-2 border-white" />
                               )}
                             </div>
-                            <div className="flex flex-col space-y-1">
+                            <div className="flex flex-col space-y-1 text-right md:text-left">
                               <span className="font-black text-primary text-base line-clamp-1 group-hover:text-accent transition-colors">{product.name_bn}</span>
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center justify-end md:justify-start gap-3">
                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-normal flex items-center gap-1.5 opacity-60">
                                   <Tag className="w-3 h-3 text-primary/40" /> {product.sku || 'No SKU'}
                                 </span>
@@ -378,12 +378,14 @@ const AdminProducts = () => {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="bg-white/80 text-[10px] font-bold text-primary border-primary/10 shadow-sm rounded-full px-4 py-1">
-                            {product.categories?.name_bn || categoryMap[product.category_id] || product.category_id || "Uncategorized"}
-                          </Badge>
+                        <TableCell data-label="Category">
+                          <div className="flex justify-end md:justify-start">
+                            <Badge variant="outline" className="bg-white/80 text-[10px] font-bold text-primary border-primary/10 shadow-sm rounded-full px-4 py-1">
+                              {product.categories?.name_bn || categoryMap[product.category_id] || product.category_id || "Uncategorized"}
+                            </Badge>
+                          </div>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right" data-label="Pricing">
                           <div className="flex flex-col items-end">
                             <span className="font-black text-primary text-lg tracking-tighter">৳{product.sale_price ? product.sale_price.toLocaleString() : (product.base_price || 0).toLocaleString()}</span>
                             {product.sale_price && (
@@ -391,8 +393,8 @@ const AdminProducts = () => {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex flex-col items-center gap-1.5">
+                        <TableCell className="text-center" data-label="Stock Level">
+                           <div className="flex flex-col items-end md:items-center gap-1.5">
                             <span className={`text-xl font-black tracking-tighter ${
                               product.stock_quantity <= 0 ? "text-red-500" : 
                               product.stock_quantity <= (product.low_stock_threshold || 5) ? "text-amber-500" : "text-primary/70"
@@ -410,8 +412,8 @@ const AdminProducts = () => {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col gap-4 items-center justify-center">
+                        <TableCell data-label="Visibility Status">
+                          <div className="flex flex-col gap-4 items-end md:items-center justify-center">
                             <div className="flex items-center gap-2 group/sw transition-all">
                               <Switch
                                 checked={product.is_active}
@@ -432,7 +434,7 @@ const AdminProducts = () => {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="text-right pr-6">
+                        <TableCell className="text-right pr-6" data-label="Catalog Hub">
                            <div className="flex items-center justify-end gap-2">
                              <Button 
                                variant="ghost" 

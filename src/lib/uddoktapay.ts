@@ -1,6 +1,6 @@
 // UddoktaPay Client-Side Integration
-const UDDOKTAPAY_BASE_URL = "https://vibeable.paymently.io/api";
-const UDDOKTAPAY_API_KEY = "hdbo1VK8NZQ5kMysnui5e3wOEDBTqWLFZgpEGQsM";
+const UDDOKTAPAY_BASE_URL = import.meta.env.VITE_UDDOKTAPAY_BASE_URL || "https://vibeable.paymently.io/api";
+const UDDOKTAPAY_API_KEY = import.meta.env.VITE_UDDOKTAPAY_API_KEY || "";
 
 export interface CreateChargeParams {
   fullName: string;
@@ -37,15 +37,26 @@ export interface VerifyPaymentResponse {
   message?: string;
 }
 
+export interface UddoktaPayConfig {
+  apiKey?: string;
+  baseUrl?: string;
+}
+
 // Client-side payment creation (directly calling UddoktaPay API)
-export async function createChargeClientSide(params: CreateChargeParams): Promise<CreateChargeResponse> {
+export async function createChargeClientSide(
+  params: CreateChargeParams, 
+  config?: UddoktaPayConfig
+): Promise<CreateChargeResponse> {
+  const apiKey = config?.apiKey || UDDOKTAPAY_API_KEY;
+  const baseUrl = config?.baseUrl || UDDOKTAPAY_BASE_URL;
+
   try {
-    const response = await fetch(`${UDDOKTAPAY_BASE_URL}/checkout-v2`, {
+    const response = await fetch(`${baseUrl}/checkout-v2`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "RT-UDDOKTAPAY-API-KEY": UDDOKTAPAY_API_KEY,
+        "RT-UDDOKTAPAY-API-KEY": apiKey,
       },
       body: JSON.stringify({
         full_name: params.fullName,
@@ -84,19 +95,26 @@ export async function createChargeClientSide(params: CreateChargeParams): Promis
 }
 
 // Client-side payment verification
-export async function verifyPaymentClientSide(invoiceId: string): Promise<VerifyPaymentResponse> {
+export async function verifyPaymentClientSide(
+  invoiceId: string, 
+  config?: UddoktaPayConfig
+): Promise<VerifyPaymentResponse> {
+  const apiKey = config?.apiKey || UDDOKTAPAY_API_KEY;
+  const baseUrl = config?.baseUrl || UDDOKTAPAY_BASE_URL;
+
   try {
-    const response = await fetch(`${UDDOKTAPAY_BASE_URL}/verify-payment`, {
+    const response = await fetch(`${baseUrl}/verify-payment`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "RT-UDDOKTAPAY-API-KEY": UDDOKTAPAY_API_KEY,
+        "RT-UDDOKTAPAY-API-KEY": apiKey,
       },
       body: JSON.stringify({
         invoice_id: invoiceId,
       }),
     });
+
 
     const result = await response.json();
     

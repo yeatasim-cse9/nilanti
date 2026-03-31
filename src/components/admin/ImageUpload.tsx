@@ -13,8 +13,11 @@ interface ImageUploadProps {
   multiple?: boolean;
 }
 
+import { useSiteSettings } from "@/hooks/useAdminData";
+
 export const ImageUpload = ({ label = "ছবি আপলোড করুন", images, onChange, multiple = false }: ImageUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
+  const { data: settings } = useSiteSettings();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -22,6 +25,7 @@ export const ImageUpload = ({ label = "ছবি আপলোড করুন", 
 
     setIsUploading(true);
     const newImages = [...images];
+    const apiKey = settings?.imgbb_api_key;
 
     try {
       for (let i = 0; i < files.length; i++) {
@@ -31,12 +35,11 @@ export const ImageUpload = ({ label = "ছবি আপলোড করুন", 
           continue;
         }
 
-        const url = await uploadToImgBB(file);
+        const url = await uploadToImgBB(file, apiKey);
         if (multiple) {
           newImages.push(url);
         } else {
           onChange([url]);
-          setIsUploading(false);
           return;
         }
       }
@@ -47,6 +50,7 @@ export const ImageUpload = ({ label = "ছবি আপলোড করুন", 
       setIsUploading(false);
     }
   };
+
 
   const removeImage = (index: number) => {
     const newImages = images.filter((_, i) => i !== index);

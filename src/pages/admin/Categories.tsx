@@ -79,60 +79,75 @@ const AdminCategories = () => {
         </Button>
       </div>
 
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <Table>
-          <TableHeader>
+      <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+        <Table className="table-responsive-stack">
+          <TableHeader className="bg-slate-50/50 hidden md:table-header-group">
             <TableRow>
-              <TableHead>ক্যাটাগরি</TableHead>
-              <TableHead>স্লাগ</TableHead>
-              <TableHead className="text-center">পণ্য সংখ্যা</TableHead>
-              <TableHead className="text-center">সক্রিয়</TableHead>
-              <TableHead className="text-right">অ্যাকশন</TableHead>
+              <TableHead className="font-bold">ক্যাটাগরি</TableHead>
+              <TableHead className="font-bold">স্লাগ</TableHead>
+              <TableHead className="text-center font-bold">পণ্য সংখ্যা</TableHead>
+              <TableHead className="text-center font-bold">সক্রিয়</TableHead>
+              <TableHead className="text-right font-bold pr-6">অ্যাকশন</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {categories?.map((cat: any) => (
-              <TableRow key={cat.id}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <TableRow key={cat.id} className="hover:bg-slate-50/50 transition-colors">
+                <TableCell data-label="ক্যাটাগরি">
+                  <div className="flex items-center gap-3 md:justify-start justify-end">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                       {cat.image_url ? (
                         <img src={cat.image_url} alt={cat.name_bn} className="w-full h-full object-cover rounded-lg" />
                       ) : (
                         <FolderTree className="h-5 w-5 text-primary" />
                       )}
                     </div>
-                    <span className="font-medium">{cat.name_bn}</span>
+                    <span className="font-bold text-slate-900">{cat.name_bn}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{cat.slug}</TableCell>
-                <TableCell className="text-center">
+                <TableCell data-label="স্লাগ" className="text-muted-foreground font-mono text-xs md:text-left text-right">
+                  {cat.slug}
+                </TableCell>
+                <TableCell data-label="পণ্য সংখ্যা" className="text-center md:text-center text-right font-semibold">
                   {products ? products.filter((p: any) => p.category_id === cat.id).length : 0}টি
                 </TableCell>
-                <TableCell className="text-center">
-                  <Switch
-                    checked={cat.is_active}
-                    onCheckedChange={(v) => handleToggle(cat.id, v)}
-                  />
+                <TableCell data-label="সক্রিয়" className="text-center md:text-center text-right">
+                  <div className="flex items-center md:justify-center justify-end">
+                    <Switch
+                      checked={cat.is_active}
+                      onCheckedChange={(v) => handleToggle(cat.id, v)}
+                      className="scale-90"
+                    />
+                  </div>
                 </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleEdit(cat)}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        এডিট
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(cat.id)}>
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        মুছুন
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                <TableCell data-label="অ্যাকশন" className="text-right pr-6">
+                  <div className="flex items-center justify-end gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-10 w-10 min-h-[44px] min-w-[44px] rounded-full hover:bg-slate-100"
+                      onClick={() => handleEdit(cat)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-10 w-10 min-h-[44px] min-w-[44px] rounded-full hover:bg-slate-100">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48 rounded-xl p-2 shadow-xl border-slate-200">
+                        <DropdownMenuItem onClick={() => handleEdit(cat)} className="rounded-lg font-medium p-2.5">
+                          <Edit className="h-4 w-4 mr-2 text-primary" />
+                          এডিট
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive rounded-lg font-medium p-2.5" onClick={() => setDeleteId(cat.id)}>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          মুছুন
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

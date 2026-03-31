@@ -198,7 +198,7 @@ export default function AdminPayments() {
         </Card>
       </div>
 
-      <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+      <div className="table-wrapper">
         <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between">
           <div className="flex flex-col sm:flex-row gap-4 w-full">
             <div className="relative w-full max-w-sm">
@@ -225,22 +225,21 @@ export default function AdminPayments() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader className="bg-slate-50/80">
-              <TableRow className="border-slate-100">
-                <TableHead className="font-semibold text-slate-700 pl-6 rounded-tl-xl w-[220px]">
-                  অর্ডার ও কাস্টমার
-                </TableHead>
-                <TableHead className="font-semibold text-slate-700">অ্যামাউন্ট</TableHead>
-                <TableHead className="font-semibold text-slate-700">পেমেন্ট স্ট্যাটাস</TableHead>
-                <TableHead className="font-semibold text-slate-700 text-center">ফ্রড রিস্ক</TableHead>
-                <TableHead className="font-semibold text-slate-700 text-center">কুরিয়ার</TableHead>
-                <TableHead className="font-semibold text-slate-700 text-right pr-6 rounded-tr-xl">
-                  ম্যানেজ পেমেন্ট
-                </TableHead>
-              </TableRow>
-            </TableHeader>
+        <Table className="table-responsive-stack">
+          <TableHeader className="bg-slate-50/80">
+            <TableRow className="border-slate-100 h-14">
+              <TableHead className="font-black text-[10px] uppercase tracking-normal text-slate-700 pl-6 rounded-tl-xl w-[220px]">
+                অর্ডার ও কাস্টমার
+              </TableHead>
+              <TableHead className="font-black text-[10px] uppercase tracking-normal text-slate-700">অ্যামাউন্ট</TableHead>
+              <TableHead className="font-black text-[10px] uppercase tracking-normal text-slate-700">পেমেন্ট স্ট্যাটাস</TableHead>
+              <TableHead className="font-black text-[10px] uppercase tracking-normal text-slate-700 text-center">ফ্রড রিস্ক</TableHead>
+              <TableHead className="font-black text-[10px] uppercase tracking-normal text-slate-700 text-center">কুরিয়ার</TableHead>
+              <TableHead className="font-black text-[10px] uppercase tracking-normal text-slate-700 text-right pr-6 rounded-tr-xl">
+                ম্যানেজ
+              </TableHead>
+            </TableRow>
+          </TableHeader>
             <TableBody>
               {isLoading ? (
                 Array(5).fill(0).map((_, i) => (
@@ -262,105 +261,112 @@ export default function AdminPayments() {
                   const dAmt = tAmt - pAmt;
                   
                   return (
-                    <TableRow key={order.id} className="hover:bg-slate-50/80 transition-colors group">
-                      <TableCell className="pl-6">
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-primary truncate max-w-[150px]">#{order.id.slice(0, 8)}</span>
+                    <TableRow key={order.id} className="hover:bg-slate-50/80 transition-colors group cursor-pointer" onClick={() => openDialog('details', order)}>
+                      <TableCell className="pl-6" data-label="অর্ডার ও কাস্টমার">
+                        <div className="flex flex-col md:text-left text-right">
+                          <span className="font-black text-primary truncate max-w-[150px] md:max-w-none">#{order.id.slice(0, 8)}</span>
                           <span className="text-xs text-slate-500 font-mono mt-0.5">{order.customer_phone}</span>
                         </div>
                       </TableCell>
                       
-                      <TableCell>
-                        <div className="flex flex-col gap-0.5 mt-1">
-                          <span className="font-bold text-slate-800 flex justify-between w-24">
-                            <span className="text-slate-400 text-xs font-normal">বিল:</span> ৳{tAmt.toLocaleString()}
+                      <TableCell data-label="অ্যামাউন্ট">
+                        <div className="flex flex-col gap-0.5 mt-1 items-end md:items-start">
+                          <span className="font-black text-slate-800 flex justify-between w-24">
+                            <span className="text-slate-400 text-[10px] font-black uppercase">বিল:</span> ৳{tAmt.toLocaleString()}
                           </span>
-                          <span className="font-medium text-emerald-600 flex justify-between w-24">
-                            <span className="text-slate-400 text-xs font-normal">জমা:</span> ৳{pAmt.toLocaleString()}
+                          <span className="font-black text-emerald-600 flex justify-between w-24">
+                            <span className="text-slate-400 text-[10px] font-black uppercase">জমা:</span> ৳{pAmt.toLocaleString()}
                           </span>
                           {dAmt > 0 && order.payment_status !== 'paid' && (
-                            <span className="font-medium text-rose-600 flex justify-between w-24 pt-0.5 border-t border-slate-100 mt-0.5">
-                              <span className="text-rose-400 text-xs font-normal">বাকি:</span> ৳{dAmt.toLocaleString()}
+                            <span className="font-black text-rose-600 flex justify-between w-24 pt-0.5 border-t border-slate-100 mt-0.5">
+                              <span className="text-rose-400 text-[10px] font-black uppercase">বাকি:</span> ৳{dAmt.toLocaleString()}
                             </span>
                           )}
                         </div>
                       </TableCell>
                       
-                      <TableCell>
-                        {getPaymentBadge(order.payment_status || 'unpaid')}
-                        {order.payment_method && (
-                          <div className="mt-1.5 flex items-center gap-1.5 text-[11px] font-medium text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md w-fit">
-                            <CreditCard className="w-3 h-3 text-slate-400" />
-                            {order.payment_method.toUpperCase()}
-                          </div>
-                        )}
+                      <TableCell data-label="পেমেন্ট স্ট্যাটাস">
+                        <div className="flex flex-col items-end md:items-start">
+                          {getPaymentBadge(order.payment_status || 'unpaid')}
+                          {order.payment_method && (
+                            <div className="mt-1.5 flex items-center gap-1.5 text-[10px] font-black uppercase text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md w-fit">
+                              <CreditCard className="w-3 h-3 text-slate-400" />
+                              {order.payment_method.toUpperCase()}
+                            </div>
+                          )}
+                        </div>
                       </TableCell>
                       
-                      <TableCell className="text-center">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleFraudCheck(order)}
-                          disabled={isChecking}
-                          className="h-8 text-xs font-medium border-rose-100 hover:bg-rose-50 hover:text-rose-700 text-rose-600 ml-auto"
-                        >
-                          <ShieldAlert className="w-3 h-3 mr-1.5" /> চেক করুন
-                        </Button>
+                      <TableCell className="text-center" data-label="ফ্রড রিস্ক">
+                        <div className="flex justify-end md:justify-center">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={(e) => { e.stopPropagation(); handleFraudCheck(order); }}
+                            disabled={isChecking}
+                            className="h-9 min-h-[44px] text-xs font-black border-rose-100 hover:bg-rose-50 hover:text-rose-700 text-rose-600 uppercase"
+                          >
+                            <ShieldAlert className="w-3 h-3 mr-1.5" /> চেক করুন
+                          </Button>
+                        </div>
                       </TableCell>
 
-                      <TableCell className="text-center">
-                        {order.steadfast_consignment_id ? (
-                           <Button 
-                             onClick={() => openDialog('tracking', order)} 
-                             variant="outline" 
-                             size="sm" 
-                             className="h-7 text-xs font-medium border-indigo-200 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-100 hover:text-indigo-800"
-                           >
-                              <MapPin className="w-3 h-3 mr-1" /> ট্র্যাক
-                           </Button>
-                        ) : (
-                          <span className="text-slate-400 text-xs italic">Not sent</span>
-                        )}
+                      <TableCell className="text-center" data-label="কুরিয়ার">
+                        <div className="flex justify-end md:justify-center">
+                          {order.steadfast_consignment_id ? (
+                             <Button 
+                               onClick={(e) => { e.stopPropagation(); openDialog('tracking', order); }} 
+                               variant="outline" 
+                               size="sm" 
+                               className="h-9 min-h-[44px] text-xs font-black border-indigo-200 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-100 hover:text-indigo-800 uppercase"
+                             >
+                                <MapPin className="w-3 h-3 mr-1" /> ট্র্যাক
+                             </Button>
+                          ) : (
+                            <span className="text-slate-400 text-[10px] font-black uppercase opacity-40">Not sent</span>
+                          )}
+                        </div>
                       </TableCell>
 
-                      <TableCell className="text-right pr-6">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0" aria-label="Open menu">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-[180px]">
-                            <DropdownMenuLabel className="text-xs text-slate-500">পেমেন্ট অ্যাকশন</DropdownMenuLabel>
-                            
-                            <DropdownMenuItem onClick={() => openDialog('details', order)}>
-                              <FileText className="mr-2 h-4 w-4 text-blue-500" /> রসিদ ও বিস্তারিত
-                            </DropdownMenuItem>
-                            
-                            <DropdownMenuSeparator />
-                            
-                            <DropdownMenuItem 
-                              onClick={() => openDialog('collect', order)}
-                              disabled={order.payment_status === 'paid' || order.status === 'cancelled'}
-                              className={order.payment_status === 'paid' ? "opacity-50" : ""}
-                            >
-                              <Wallet className="mr-2 h-4 w-4 text-emerald-500" /> পেমেন্ট কালেকশন
-                            </DropdownMenuItem>
-                            
-                            <DropdownMenuItem onClick={() => openDialog('refund', order)}>
-                              <ArrowLeftRight className="mr-2 h-4 w-4 text-rose-500" /> আংশিক/পূর্ণ রিফান্ড
-                            </DropdownMenuItem>
-                            
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                      <TableCell className="text-right pr-6" data-label="ম্যানেজ">
+                        <div className="flex justify-end">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-10 w-10 min-h-[44px] min-w-[44px] p-0 rounded-full" aria-label="Open menu" onClick={(e) => e.stopPropagation()}>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-[280px] md:w-48 rounded-2xl p-2 border-primary/10 shadow-2xl">
+                              <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-normal text-slate-400 px-3 pb-2 pt-1">পেমেন্ট অ্যাকশন</DropdownMenuLabel>
+                              
+                              <DropdownMenuItem onClick={() => openDialog('details', order)} className="rounded-xl font-bold p-3 gap-3">
+                                <FileText className="h-4 w-4 text-blue-500" /> রসিদ ও বিস্তারিত
+                              </DropdownMenuItem>
+                              
+                              <DropdownMenuSeparator className="my-2 bg-primary/5" />
+                              
+                              <DropdownMenuItem 
+                                onClick={() => openDialog('collect', order)}
+                                disabled={order.payment_status === 'paid' || order.status === 'cancelled'}
+                                className={`rounded-xl font-bold p-3 gap-3 ${order.payment_status === 'paid' ? "opacity-50" : ""}`}
+                              >
+                                <Wallet className="h-4 w-4 text-emerald-500" /> পেমেন্ট কালেকশন
+                              </DropdownMenuItem>
+                              
+                              <DropdownMenuItem onClick={() => openDialog('refund', order)} className="rounded-xl font-bold p-3 gap-3">
+                                <ArrowLeftRight className="h-4 w-4 text-rose-500" /> আংশিক/পূর্ণ রিফান্ড
+                              </DropdownMenuItem>
+                              
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
                 })
               )}
             </TableBody>
-          </Table>
-        </div>
+            </Table>
       </div>
 
       {/* Render Dialogs */}

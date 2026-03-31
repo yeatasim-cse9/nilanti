@@ -345,27 +345,46 @@ const AdminNewProduct = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-20">
-      <div className="flex items-center justify-between bg-background/95 backdrop-blur sticky top-0 z-10 py-4 border-b">
+    <div className="max-w-7xl mx-auto space-y-8 pb-32">
+      {/* Premium Sticky Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bg-white/60 dark:bg-[#0f172a]/60 backdrop-blur-2xl sticky top-0 z-[40] py-6 px-8 -mx-2 rounded-[2.5rem] border border-white/60 dark:border-white/5 shadow-2xl shadow-indigo-500/5 mb-8 transition-all duration-500">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" className="rounded-full mr-2" onClick={() => navigate("/admin/products")}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-xl h-10 w-10 bg-slate-100 dark:bg-slate-800 hover:bg-primary/10 hover:text-primary transition-all duration-300" 
+            onClick={() => navigate("/admin/products")}
+          >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="p-3 bg-primary/10 rounded-xl">
-            <Box className="h-6 w-6 text-primary" />
+          <div className="relative">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 via-blue-500/20 to-indigo-500/30 rounded-2xl blur-lg opacity-60" />
+            <div className="relative p-3 bg-gradient-to-br from-primary to-blue-600 rounded-xl shadow-lg shadow-primary/20">
+              <Box className="h-5 w-5 text-white" />
+            </div>
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              {isEditing ? "পণ্য এডিট করুন" : "নতুন পন্য যুক্ত করুন"}
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-800 dark:text-white">
+              {isEditing ? "পণ্য এডিট করুন" : "নতুন পণ্য যুক্ত করুন"}
             </h1>
-            <p className="text-muted-foreground text-sm uppercase tracking-wider">Clothing Business Suite</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Product Management Console</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => navigate("/admin/products")}>বাতিল করুন</Button>
-          <Button onClick={form.handleSubmit(onSubmit)} className="gap-2 px-8 shadow-md" disabled={saving}>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate("/admin/products")} 
+            className="rounded-xl h-11 flex-1 sm:flex-none text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-destructive hover:bg-destructive/10 transition-all"
+          >
+            বাতিল করুন
+          </Button>
+          <Button 
+            onClick={form.handleSubmit(onSubmit)} 
+            className="gap-2 rounded-xl h-11 px-6 sm:px-8 flex-1 sm:flex-none bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all duration-300" 
+            disabled={saving}
+          >
             <Save className="h-4 w-4" />
-            {saving ? "সেভ হচ্ছে..." : "পণ্য সংরক্ষণ করুন"}
+            {saving ? "সেভ হচ্ছে..." : "সংরক্ষণ করুন"}
           </Button>
         </div>
       </div>
@@ -375,31 +394,36 @@ const AdminNewProduct = () => {
           {/* Main Content Area */}
           <div className="lg:col-span-8">
             <Tabs defaultValue="general" className="w-full">
-              <TabsList className="w-full grid grid-cols-4 mb-8 bg-muted/50 p-1 rounded-xl h-auto">
-                <TabsTrigger value="general" className="gap-2 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg">
-                  <Box className="h-4 w-4" /> সাধারণ
+              <TabsList className="w-full grid grid-cols-4 mb-6 bg-white/70 dark:bg-slate-800/50 backdrop-blur-sm p-1.5 rounded-2xl h-auto border border-slate-200/60 dark:border-slate-700/40 shadow-sm">
+                <TabsTrigger value="general" className="gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-wider data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 transition-all duration-300">
+                  <Box className="h-3.5 w-3.5" /> সাধারণ
                 </TabsTrigger>
-                <TabsTrigger value="variants" className="gap-2 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg">
-                  <Settings className="h-4 w-4" /> ভ্যারিয়েন্ট
+                <TabsTrigger value="variants" className="gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-wider data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 transition-all duration-300">
+                  <Settings className="h-3.5 w-3.5" /> ভ্যারিয়েন্ট
                 </TabsTrigger>
-                <TabsTrigger value="media" className="gap-2 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg">
-                  <ImageIcon className="h-4 w-4" /> মিডিয়া
+                <TabsTrigger value="media" className="gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-wider data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 transition-all duration-300">
+                  <ImageIcon className="h-3.5 w-3.5" /> মিডিয়া
                 </TabsTrigger>
-                <TabsTrigger value="advanced" className="gap-2 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg">
-                  <ShieldCheck className="h-4 w-4" /> অন্যান্য
+                <TabsTrigger value="advanced" className="gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-wider data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 transition-all duration-300">
+                  <ShieldCheck className="h-3.5 w-3.5" /> অন্যান্য
                 </TabsTrigger>
-                <TabsTrigger value="cross-selling" className="gap-2 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg">
-                  <Plus className="h-4 w-4" /> প্রোমোশন
+                <TabsTrigger value="cross-selling" className="gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-wider data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 transition-all duration-300">
+                  <Plus className="h-3.5 w-3.5" /> প্রোমোশন
                 </TabsTrigger>
               </TabsList>
 
               {/* General Tab */}
-              <TabsContent value="general" className="space-y-6">
-                <Card className="border-border/50 shadow-sm overflow-hidden">
-                  <CardHeader className="bg-muted/20 border-b border-border/50 pb-4">
-                    <CardTitle className="text-lg font-semibold text-primary">মৌলিক তথ্য</CardTitle>
+              <TabsContent value="general" className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <Card className="border-white/60 dark:border-white/5 shadow-2xl shadow-indigo-500/5 rounded-[2rem] overflow-hidden bg-white/60 dark:bg-[#0f172a]/60 backdrop-blur-xl hover:shadow-indigo-500/10 transition-all duration-500">
+                  <CardHeader className="bg-gradient-to-r from-blue-50/50 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/10 border-b border-white/40 dark:border-white/5 pb-6">
+                    <CardTitle className="text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-3">
+                      <div className="p-2 bg-blue-500/10 rounded-xl">
+                        <Box className="h-5 w-5 text-blue-500" />
+                      </div>
+                      মৌলিক তথ্য
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="p-8 space-y-6">
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
@@ -586,9 +610,9 @@ const AdminNewProduct = () => {
 
               {/* Variants Tab */}
               <TabsContent value="variants" className="space-y-6">
-                <Card className="border-border/50 shadow-sm overflow-hidden">
-                  <CardHeader className="bg-muted/20 border-b border-border/50 pb-4">
-                    <CardTitle className="text-lg font-semibold text-primary">সাইজ নির্ধারণ করুন</CardTitle>
+                <Card className="border-white/50 dark:border-slate-700/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-2xl overflow-hidden bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+                  <CardHeader className="bg-gradient-to-r from-slate-50 to-green-50/30 dark:from-slate-800/80 dark:to-green-900/10 border-b border-slate-200/60 dark:border-slate-700/40 pb-4">
+                    <CardTitle className="text-base font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">সাইজ নির্ধারণ করুন</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
@@ -596,32 +620,32 @@ const AdminNewProduct = () => {
                         <div 
                           key={size}
                           onClick={() => toggleSize(size)}
-                          className={`px-4 py-2 rounded-md border cursor-pointer transition-all ${
+                          className={`px-5 py-2.5 rounded-xl border-2 cursor-pointer transition-all duration-300 text-center ${
                             selectedSizes.includes(size) 
-                              ? "bg-primary text-primary-foreground border-primary shadow-sm" 
-                              : "bg-card hover:bg-muted border-border"
+                              ? "bg-gradient-to-r from-primary to-blue-600 text-white border-primary shadow-lg shadow-primary/20 scale-105" 
+                              : "bg-white dark:bg-slate-800 hover:bg-primary/5 border-slate-200 dark:border-slate-700 hover:border-primary/40"
                           }`}
                         >
-                          <span className="font-semibold">{size}</span>
+                          <span className="font-black text-xs uppercase tracking-wider">{size}</span>
                         </div>
                       ))}
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="border-border/50 shadow-sm overflow-hidden">
-                  <CardHeader className="flex flex-row items-center justify-between bg-muted/20 border-b border-border/50 pb-4">
+                <Card className="border-white/50 dark:border-slate-700/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-2xl overflow-hidden bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+                  <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-slate-50 to-purple-50/30 dark:from-slate-800/80 dark:to-purple-900/10 border-b border-slate-200/60 dark:border-slate-700/40 pb-4">
                     <div>
-                      <CardTitle className="text-lg font-semibold text-primary">কালার ভ্যারিয়েন্ট</CardTitle>
-                      <CardDescription>বিভিন্ন রঙের নাম ও ছবি যোগ করুন</CardDescription>
+                      <CardTitle className="text-base font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">কালার ভ্যারিয়েন্ট</CardTitle>
+                      <CardDescription className="text-xs">বিভিন্ন রঙের নাম ও ছবি যোগ করুন</CardDescription>
                     </div>
-                    <Button type="button" variant="outline" size="sm" onClick={addColor} className="gap-1 shadow-sm">
-                      <Plus className="h-4 w-4" /> রঙ যোগ করুন
+                    <Button type="button" variant="outline" size="sm" onClick={addColor} className="gap-1.5 rounded-xl border-primary/20 text-primary hover:bg-primary hover:text-white transition-all text-xs font-bold">
+                      <Plus className="h-3.5 w-3.5" /> রঙ যোগ করুন
                     </Button>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {colors.map((color, idx) => (
-                      <div key={idx} className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
+                      <div key={idx} className="flex items-center gap-4 p-4 border border-slate-200/60 dark:border-slate-700/40 rounded-xl bg-gradient-to-r from-white to-slate-50/50 dark:from-slate-800/50 dark:to-slate-900/30 hover:shadow-md transition-all duration-300">
                         <div className="space-y-1 flex-1">
                           <Label className="text-xs">কালার নাম</Label>
                           <Input 
@@ -670,16 +694,16 @@ const AdminNewProduct = () => {
                 </Card>
 
                 <div className="flex justify-center">
-                  <Button type="button" onClick={generateVariants} variant="secondary" className="gap-2 px-10 border-2 border-primary/20">
+                  <Button type="button" onClick={generateVariants} className="gap-2 px-10 h-12 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-xs uppercase tracking-wider hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all duration-300">
                     <RefreshCw className="h-4 w-4" /> ভ্যারিয়েন্ট তৈরি করুন
                   </Button>
                 </div>
 
                 {variants.length > 0 && (
-                  <Card className="border-border/50 shadow-sm overflow-hidden">
-                    <CardHeader className="bg-muted/20 border-b border-border/50 pb-4">
-                      <CardTitle className="text-lg font-semibold text-primary">ভ্যারিয়েন্ট ম্যাট্রিক্স</CardTitle>
-                      <CardDescription>প্রতিটি কম্বিনেশনের জন্য আলাদা ইনভেন্টরি</CardDescription>
+                  <Card className="border-white/50 dark:border-slate-700/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-2xl overflow-hidden bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+                    <CardHeader className="bg-gradient-to-r from-slate-50 to-indigo-50/30 dark:from-slate-800/80 dark:to-indigo-900/10 border-b border-slate-200/60 dark:border-slate-700/40 pb-4">
+                      <CardTitle className="text-base font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">ভ্যারিয়েন্ট ম্যাট্রিক্স</CardTitle>
+                      <CardDescription className="text-xs">প্রতিটি কম্বিনেশনের জন্য আলাদা ইনভেন্টরি</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="overflow-x-auto">
@@ -755,11 +779,11 @@ const AdminNewProduct = () => {
                   </Card>
                 )}
 
-                <Card className="border-border/50 shadow-sm overflow-hidden">
-                  <CardHeader className="flex flex-row items-center justify-between bg-muted/20 border-b border-border/50 pb-4">
+                <Card className="border-white/50 dark:border-slate-700/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-2xl overflow-hidden bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+                  <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-slate-50 to-teal-50/30 dark:from-slate-800/80 dark:to-teal-900/10 border-b border-slate-200/60 dark:border-slate-700/40 pb-4">
                     <div>
-                      <CardTitle className="text-lg font-semibold text-primary">সাইজ চার্ট (Size Chart)</CardTitle>
-                      <CardDescription>পণ্যটির সঠিক মাপের তালিকা প্রদান করুন</CardDescription>
+                      <CardTitle className="text-base font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">সাইজ চার্ট (Size Chart)</CardTitle>
+                      <CardDescription className="text-xs">পণ্যটির সঠিক মাপের তালিকা প্রদান করুন</CardDescription>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -834,10 +858,10 @@ const AdminNewProduct = () => {
 
               {/* Media Tab */}
               <TabsContent value="media" className="space-y-6">
-                <Card className="border-border/50 shadow-sm overflow-hidden">
-                  <CardHeader className="bg-muted/20 border-b border-border/50 pb-4">
-                    <CardTitle className="text-lg font-semibold text-primary">পণ্য গ্যালারি</CardTitle>
-                    <CardDescription>একাধিক ছবি আপলোড করুন ও প্রধান ছবি বাছাই করুন</CardDescription>
+                <Card className="border-white/50 dark:border-slate-700/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-2xl overflow-hidden bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+                  <CardHeader className="bg-gradient-to-r from-slate-50 to-orange-50/30 dark:from-slate-800/80 dark:to-orange-900/10 border-b border-slate-200/60 dark:border-slate-700/40 pb-4">
+                    <CardTitle className="text-base font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2"><ImageIcon className="h-4 w-4 text-primary" /> পণ্য গ্যালারি</CardTitle>
+                    <CardDescription className="text-xs">একাধিক ছবি আপলোড করুন ও প্রধান ছবি বাছাই করুন</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <ImageUpload 
@@ -893,9 +917,9 @@ const AdminNewProduct = () => {
 
               {/* Advanced Tab */}
               <TabsContent value="advanced" className="space-y-6">
-                <Card className="border-border/50 shadow-sm overflow-hidden">
-                  <CardHeader className="bg-muted/20 border-b border-border/50 pb-4">
-                    <CardTitle className="text-lg font-semibold text-primary">কেয়ার ইন্সট্রাকশন</CardTitle>
+                <Card className="border-white/50 dark:border-slate-700/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-2xl overflow-hidden bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+                  <CardHeader className="bg-gradient-to-r from-slate-50 to-cyan-50/30 dark:from-slate-800/80 dark:to-cyan-900/10 border-b border-slate-200/60 dark:border-slate-700/40 pb-4">
+                    <CardTitle className="text-base font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">কেয়ার ইন্সট্রাকশন</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -961,9 +985,9 @@ const AdminNewProduct = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="border-border/50 shadow-sm overflow-hidden">
-                  <CardHeader className="bg-muted/20 border-b border-border/50 pb-4">
-                    <CardTitle className="text-lg font-semibold text-primary">রিটার্ন ও এক্সচেঞ্জ পলিসি</CardTitle>
+                <Card className="border-white/50 dark:border-slate-700/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-2xl overflow-hidden bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+                  <CardHeader className="bg-gradient-to-r from-slate-50 to-rose-50/30 dark:from-slate-800/80 dark:to-rose-900/10 border-b border-slate-200/60 dark:border-slate-700/40 pb-4">
+                    <CardTitle className="text-base font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">রিটার্ন ও এক্সচেঞ্জ পলিসি</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -1019,9 +1043,9 @@ const AdminNewProduct = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="border-border/50 shadow-sm overflow-hidden">
-                  <CardHeader className="bg-muted/20 border-b border-border/50 pb-4">
-                    <CardTitle className="text-lg font-semibold text-primary">প্রি-অর্ডার অপশন</CardTitle>
+                <Card className="border-white/50 dark:border-slate-700/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-2xl overflow-hidden bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+                  <CardHeader className="bg-gradient-to-r from-slate-50 to-violet-50/30 dark:from-slate-800/80 dark:to-violet-900/10 border-b border-slate-200/60 dark:border-slate-700/40 pb-4">
+                    <CardTitle className="text-base font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">প্রি-অর্ডার অপশন</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <FormField
@@ -1057,10 +1081,10 @@ const AdminNewProduct = () => {
 
               {/* Cross-Selling Tab */}
               <TabsContent value="cross-selling" className="space-y-6">
-                <Card className="border-border/50 shadow-sm overflow-hidden">
-                  <CardHeader className="bg-muted/20 border-b border-border/50 pb-4">
-                    <CardTitle className="text-lg font-semibold text-primary">সম্পর্কিত পণ্য (Related Products)</CardTitle>
-                    <CardDescription>এই পণ্যটির নিচে যে পণ্যগুলো দেখানো হবে</CardDescription>
+                <Card className="border-white/50 dark:border-slate-700/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-2xl overflow-hidden bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+                  <CardHeader className="bg-gradient-to-r from-slate-50 to-sky-50/30 dark:from-slate-800/80 dark:to-sky-900/10 border-b border-slate-200/60 dark:border-slate-700/40 pb-4">
+                    <CardTitle className="text-base font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">সম্পর্কিত পণ্য</CardTitle>
+                    <CardDescription className="text-xs">এই পণ্যটির নিচে যে পণ্যগুলো দেখানো হবে</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1106,10 +1130,10 @@ const AdminNewProduct = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="border-border/50 shadow-sm overflow-hidden">
-                  <CardHeader className="bg-muted/20 border-b border-border/50 pb-4">
-                    <CardTitle className="text-lg font-semibold text-primary">একত্রে কেনা প্রোডাক্ট (Frequently Bought Together)</CardTitle>
-                    <CardDescription>বান্ডেল ডিল হিসেবে সাজেস্ট করা হবে</CardDescription>
+                <Card className="border-white/50 dark:border-slate-700/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-2xl overflow-hidden bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+                  <CardHeader className="bg-gradient-to-r from-slate-50 to-pink-50/30 dark:from-slate-800/80 dark:to-pink-900/10 border-b border-slate-200/60 dark:border-slate-700/40 pb-4">
+                    <CardTitle className="text-base font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">একত্রে কেনা প্রোডাক্ট</CardTitle>
+                    <CardDescription className="text-xs">বান্ডেল ডিল হিসেবে সাজেস্ট করা হবে</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1159,14 +1183,17 @@ const AdminNewProduct = () => {
           </div>
 
           {/* Sidebar Area */}
-          <div className="lg:col-span-4 space-y-6">
-            <Card className="border-border/50 shadow-sm overflow-hidden">
-              <CardHeader className="bg-primary/5 border-b border-border/50 pb-4">
-                <CardTitle className="text-lg font-semibold text-primary flex items-center gap-2">
-                  <Percent className="h-4 w-4" /> মূল্য ও ইনভেন্টরি
+          <div className="lg:col-span-4 space-y-8">
+            <Card className="border-white/60 dark:border-white/5 shadow-2xl shadow-emerald-500/5 rounded-[2rem] overflow-hidden bg-white/60 dark:bg-[#0f172a]/60 backdrop-blur-xl hover:shadow-emerald-500/10 transition-all duration-500">
+              <CardHeader className="bg-gradient-to-r from-emerald-50/50 to-teal-50/30 dark:from-emerald-950/20 dark:to-teal-950/10 border-b border-white/40 dark:border-white/5 pb-6">
+                <CardTitle className="text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-3">
+                  <div className="p-2 bg-emerald-500/10 rounded-xl">
+                    <Percent className="h-5 w-5 text-emerald-500" />
+                  </div>
+                  মূল্য ও ইনভেন্টরি
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="p-8 space-y-6">
                 <FormField
                   control={form.control}
                   name="base_price"
@@ -1262,10 +1289,10 @@ const AdminNewProduct = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-border/50 shadow-sm overflow-hidden">
-              <CardHeader className="bg-muted/20 border-b border-border/50 pb-4">
-                <CardTitle className="text-lg font-semibold text-primary flex items-center gap-2">
-                  <TagIcon className="h-4 w-4" /> সংগঠন ও ট্যাগ
+            <Card className="border-white/50 dark:border-slate-700/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-2xl overflow-hidden bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+              <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50/30 dark:from-slate-800/80 dark:to-amber-900/10 border-b border-slate-200/60 dark:border-slate-700/40 pb-4">
+                <CardTitle className="text-base font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                  <TagIcon className="h-4 w-4 text-amber-500" /> সংগঠন ও ট্যাগ
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -1353,10 +1380,10 @@ const AdminNewProduct = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-border/50 shadow-sm overflow-hidden">
-              <CardHeader className="bg-muted/20 border-b border-border/50 pb-4">
-                <CardTitle className="text-lg font-semibold text-primary flex items-center gap-2">
-                  <Info className="h-4 w-4" /> স্ট্যাটাস
+            <Card className="border-white/50 dark:border-slate-700/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-2xl overflow-hidden bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50/30 dark:from-slate-800/80 dark:to-blue-900/10 border-b border-slate-200/60 dark:border-slate-700/40 pb-4">
+                <CardTitle className="text-base font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                  <Info className="h-4 w-4 text-blue-500" /> স্ট্যাটাস
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -1383,9 +1410,9 @@ const AdminNewProduct = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-border/50 shadow-sm overflow-hidden">
-              <CardHeader className="bg-muted/20 border-b border-border/50 pb-4">
-                <CardTitle className="text-lg font-semibold text-primary text-center pb-2">সার্চ ইঞ্জিন (SEO)</CardTitle>
+            <Card className="border-white/50 dark:border-slate-700/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-2xl overflow-hidden bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+              <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50/30 dark:from-slate-800/80 dark:to-purple-900/10 border-b border-slate-200/60 dark:border-slate-700/40 pb-4">
+                <CardTitle className="text-base font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider text-center pb-1">সার্চ ইঞ্জিন (SEO)</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <FormField

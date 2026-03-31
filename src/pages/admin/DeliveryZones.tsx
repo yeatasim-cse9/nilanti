@@ -71,48 +71,63 @@ const AdminDeliveryZones = () => {
         </Button>
       </div>
 
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <Table>
-          <TableHeader>
+      <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+        <Table className="table-responsive-stack">
+          <TableHeader className="bg-slate-50/50 hidden md:table-header-group">
             <TableRow>
-              <TableHead>জোন</TableHead>
-              <TableHead className="text-right">চার্জ</TableHead>
-              <TableHead className="text-right">ফ্রি ডেলিভারি</TableHead>
-              <TableHead className="text-center">সময়</TableHead>
-              <TableHead className="text-center">সক্রিয়</TableHead>
-              <TableHead className="text-right">অ্যাকশন</TableHead>
+              <TableHead className="font-bold">জোন</TableHead>
+              <TableHead className="text-right font-bold">চার্জ</TableHead>
+              <TableHead className="text-right font-bold">ফ্রি ডেলিভারি</TableHead>
+              <TableHead className="text-center font-bold">সময়</TableHead>
+              <TableHead className="text-center font-bold">সক্রিয়</TableHead>
+              <TableHead className="text-right font-bold pr-6">অ্যাকশন</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {zones?.map((zone: any) => (
-              <TableRow key={zone.id}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <TableRow key={zone.id} className="hover:bg-slate-50/50 transition-colors">
+                <TableCell data-label="জোন">
+                  <div className="flex items-center gap-3 md:justify-start justify-end">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                       <Truck className="h-5 w-5 text-primary" />
                     </div>
-                    <span className="font-medium">{zone.name_bn}</span>
+                    <span className="font-bold text-slate-900">{zone.name_bn}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-right font-medium">
+                <TableCell data-label="চার্জ" className="text-right md:text-right text-right font-bold text-slate-900">
                   ৳{zone.charge}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell data-label="ফ্রি ডেলিভারি" className="text-right md:text-right text-right font-medium text-slate-600">
                   {zone.min_order_free_delivery ? `৳${zone.min_order_free_delivery}+` : "প্রযোজ্য নয়"}
                 </TableCell>
-                <TableCell className="text-center">{zone.estimated_days} দিন</TableCell>
-                <TableCell className="text-center">
-                  <Switch
-                    checked={zone.is_active}
-                    onCheckedChange={(v) => handleToggle(zone.id, v)}
-                  />
+                <TableCell data-label="সময়" className="text-center md:text-center text-right font-medium text-slate-600">
+                  {zone.estimated_days} দিন
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell data-label="সক্রিয়" className="text-center md:text-center text-right">
+                  <div className="flex items-center md:justify-center justify-end">
+                    <Switch
+                      checked={zone.is_active}
+                      onCheckedChange={(v) => handleToggle(zone.id, v)}
+                      className="scale-90"
+                    />
+                  </div>
+                </TableCell>
+                <TableCell data-label="অ্যাকশন" className="text-right pr-6">
                   <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(zone)}>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-10 w-10 min-h-[44px] min-w-[44px] rounded-full hover:bg-slate-100"
+                      onClick={() => handleEdit(zone)}
+                    >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => setDeleteId(zone.id)}>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-10 w-10 min-h-[44px] min-w-[44px] rounded-full hover:bg-rose-50 text-rose-600"
+                      onClick={() => setDeleteId(zone.id)}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>

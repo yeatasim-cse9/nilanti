@@ -48,6 +48,7 @@ import AdminTransactions from "./pages/admin/Transactions";
 import AdminPayments from "./pages/admin/Payments";
 import AdminIntegrations from "./pages/admin/Integrations";
 import LiveChatWidget from "./components/chat/LiveChatWidget";
+import MetaPixel from "./components/MetaPixel";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <MetaPixel />
             <ScrollToTop />
             <Routes>
               {/* Public Routes */}

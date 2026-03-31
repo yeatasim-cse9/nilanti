@@ -147,6 +147,7 @@ const OrderTracking = () => {
       setOrder({
         id: orderDoc.id,
         ...orderData,
+        order_status: orderData.order_status || orderData.status || 'pending',
         order_items: orderItems,
       } as OrderData);
     } catch (err) {

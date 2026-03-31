@@ -74,66 +74,83 @@ const AdminCoupons = () => {
         </Button>
       </div>
 
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <Table>
-          <TableHeader>
+      <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+        <Table className="table-responsive-stack">
+          <TableHeader className="bg-slate-50/50 hidden md:table-header-group">
             <TableRow>
-              <TableHead>কোড</TableHead>
-              <TableHead>ছাড়</TableHead>
-              <TableHead className="text-center">মিনিমাম অর্ডার</TableHead>
-              <TableHead className="text-center">ব্যবহার</TableHead>
-              <TableHead>মেয়াদ</TableHead>
-              <TableHead className="text-center">সক্রিয়</TableHead>
-              <TableHead className="text-right">অ্যাকশন</TableHead>
+              <TableHead className="font-bold">কোড</TableHead>
+              <TableHead className="font-bold">ছাড়</TableHead>
+              <TableHead className="text-center font-bold">মিনিমাম অর্ডার</TableHead>
+              <TableHead className="text-center font-bold">ব্যবহার</TableHead>
+              <TableHead className="font-bold">মেয়াদ</TableHead>
+              <TableHead className="text-center font-bold">সক্রিয়</TableHead>
+              <TableHead className="text-right font-bold pr-6">অ্যাকশন</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {coupons?.map((coupon: any) => (
-              <TableRow key={coupon.id}>
-                <TableCell>
-                  <div>
+              <TableRow key={coupon.id} className="hover:bg-slate-50/50 transition-colors">
+                <TableCell data-label="কোড">
+                  <div className="flex flex-col md:items-start items-end">
                     <div className="flex items-center gap-2">
                       <Tag className="h-4 w-4 text-primary" />
-                      <code className="font-mono font-bold">{coupon.code}</code>
-                      {coupon.is_public && <Badge variant="outline" className="text-xs">পাবলিক</Badge>}
+                      <code className="font-mono font-bold text-slate-900">{coupon.code}</code>
+                      {coupon.is_public && <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-primary/20 text-primary bg-primary/5 uppercase font-bold tracking-wider">পাবলিক</Badge>}
                     </div>
-                    {coupon.name && <p className="text-xs text-muted-foreground mt-0.5 ml-6">{coupon.name}</p>}
+                    {coupon.name && <p className="text-[10px] font-medium text-slate-500 mt-0.5 md:ml-6">{coupon.name}</p>}
                   </div>
                 </TableCell>
-                <TableCell>
-                  <Badge variant="secondary" className="gap-1">
-                    {coupon.discount_type === "percentage" || coupon.discount_type === "percentage_free_shipping" ? (
-                      <><Percent className="h-3 w-3" />{coupon.discount_value}%</>
-                    ) : coupon.discount_type === "free_shipping" ? (
-                      <>🚚 ফ্রি শিপিং</>
-                    ) : coupon.discount_type === "buy_x_get_y" ? (
-                      <>Buy X Get Y</>
-                    ) : (
-                      <>৳{coupon.discount_value}</>
-                    )}
-                  </Badge>
+                <TableCell data-label="ছাড়">
+                  <div className="flex md:justify-start justify-end">
+                    <Badge variant="secondary" className="gap-1 font-bold bg-emerald-50 text-emerald-700 border-emerald-100">
+                      {coupon.discount_type === "percentage" || coupon.discount_type === "percentage_free_shipping" ? (
+                        <><Percent className="h-3 w-3" />{coupon.discount_value}%</>
+                      ) : coupon.discount_type === "free_shipping" ? (
+                        <>🚚 ফ্রি শিপিং</>
+                      ) : (
+                        <>৳{coupon.discount_value}</>
+                      )}
+                    </Badge>
+                  </div>
                 </TableCell>
-                <TableCell className="text-center">৳{coupon.min_order_amount || 0}</TableCell>
-                <TableCell className="text-center">
-                  {coupon.usage_count || 0}/{coupon.usage_limit || "∞"}
+                <TableCell data-label="মিনিমাম অর্ডার" className="text-center md:text-center text-right font-semibold">
+                  ৳{coupon.min_order_amount || 0}
                 </TableCell>
-                <TableCell className="text-sm">
+                <TableCell data-label="ব্যবহার" className="text-center md:text-center text-right">
+                  <span className="font-medium text-slate-700">{coupon.usage_count || 0}</span>
+                  <span className="text-slate-400 mx-1">/</span>
+                  <span className="text-slate-500">{coupon.usage_limit || "∞"}</span>
+                </TableCell>
+                <TableCell data-label="মেয়াদ" className="text-sm md:text-left text-right font-medium text-slate-600">
                   {coupon.valid_until
                     ? format(new Date(coupon.valid_until), "dd MMM, yyyy", { locale: bn })
                     : "সীমাহীন"}
                 </TableCell>
-                <TableCell className="text-center">
-                  <Switch
-                    checked={coupon.is_active}
-                    onCheckedChange={(v) => handleToggle(coupon.id, v)}
-                  />
+                <TableCell data-label="সক্রিয়" className="text-center md:text-center text-right">
+                  <div className="flex items-center md:justify-center justify-end">
+                    <Switch
+                      checked={coupon.is_active}
+                      onCheckedChange={(v) => handleToggle(coupon.id, v)}
+                      className="scale-90"
+                    />
+                  </div>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell data-label="অ্যাকশন" className="text-right pr-6">
                   <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(coupon)}>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-10 w-10 min-h-[44px] min-w-[44px] rounded-full hover:bg-slate-100"
+                      onClick={() => handleEdit(coupon)}
+                    >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => setDeleteId(coupon.id)}>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-10 w-10 min-h-[44px] min-w-[44px] rounded-full hover:bg-rose-50 text-rose-600"
+                      onClick={() => setDeleteId(coupon.id)}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>

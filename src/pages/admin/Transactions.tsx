@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { format, isAfter } from "date-fns";
+import { format } from "date-fns";
 import { bn } from "date-fns/locale";
 import { 
   Search, 
@@ -21,9 +21,12 @@ import {
   FileText,
   ArrowLeftRight,
   Phone,
-  Truck
+  Truck,
+  Clock,
+  Plus
 } from "lucide-react";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 import { 
   useOrders, 
@@ -40,7 +43,7 @@ import { useCourierCheck } from "@/hooks/useBDCourier";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -74,6 +77,7 @@ import { CollectPaymentDialog } from "@/components/admin/payments/CollectPayment
 import { CourierTrackingDialog } from "@/components/admin/payments/CourierTrackingDialog";
 import { PaymentDetailDialog } from "@/components/admin/payments/PaymentDetailDialog";
 import { RefundDialog } from "@/components/admin/payments/RefundDialog";
+import { cn } from "@/lib/utils";
 
 export default function AdminTransactions() {
   const [activeTab, setActiveTab] = useState("active");
@@ -114,7 +118,8 @@ export default function AdminTransactions() {
   const statistics = useMemo(() => {
     return activeOrdersList.reduce(
       (acc, order) => {
-        if (order.status !== "cancelled") {
+        const currentStatus = order.order_status || order.status;
+        if (currentStatus !== "cancelled") {
           const totalAmount = order.total_amount || 0;
           const paidAmount = order.payment_status === "paid" ? totalAmount : (order.advance_payment || order.paid_amount || 0);
           const dueAmount = totalAmount - paidAmount;
@@ -123,8 +128,8 @@ export default function AdminTransactions() {
           acc.totalCollected += paidAmount;
           acc.totalDue += dueAmount;
           
-          if (order.status === 'pending') acc.pendingCount++;
-          if (order.steadfast_consignment_id && order.status !== "delivered") {
+          if (currentStatus === 'pending') acc.pendingCount++;
+          if (order.steadfast_consignment_id && currentStatus !== "delivered") {
             acc.courierPipeline += dueAmount;
           }
         }
@@ -136,10 +141,11 @@ export default function AdminTransactions() {
 
   const filteredOrders = useMemo(() => {
     return currentList.filter(order => {
-      const matchSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      const matchSearch = (order.order_number || order.id).toLowerCase().includes(searchQuery.toLowerCase()) || 
                           order.customer_phone?.includes(searchQuery) ||
                           order.customer_name?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchStatus = statusFilter === "all" || order.status === statusFilter;
+      const currentStatus = order.order_status || order.status;
+      const matchStatus = statusFilter === "all" || currentStatus === statusFilter;
       const matchPayment = paymentFilter === "all" || order.payment_status === paymentFilter;
       return matchSearch && matchStatus && matchPayment;
     }).sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
@@ -179,14 +185,14 @@ export default function AdminTransactions() {
         selectedOrders.forEach(id => {
           const order = currentList.find(o => o.id === id);
           if (order && !order.steadfast_consignment_id) {
-            sendToSteadfast(order);
+            sendToSteadfast({ orderId: id, orderData: order });
           }
         });
         setSelectedOrders([]);
       }
     } else {
       // Bulk status update
-      bulkUpdate.mutate({ ids: selectedOrders, updates: { status: action } as any }, {
+      bulkUpdate.mutate({ ids: selectedOrders, updates: { order_status: action } }, {
         onSuccess: () => setSelectedOrders([])
       });
     }
@@ -215,387 +221,368 @@ export default function AdminTransactions() {
     setSelectedOrder(null);
   };
 
-  const statusBadges: Record<string, any> = {
-    pending: <Badge className="bg-amber-100 text-amber-700 border-none shadow-none">পেন্ডিং</Badge>,
-    processing: <Badge className="bg-blue-100 text-blue-700 border-none shadow-none">প্রসেসিং</Badge>,
-    shipped: <Badge className="bg-indigo-100 text-indigo-700 border-none shadow-none">শিপড</Badge>,
-    delivered: <Badge className="bg-emerald-100 text-emerald-700 border-none shadow-none">ডেলিভারড</Badge>,
-    cancelled: <Badge className="bg-rose-100 text-rose-700 border-none shadow-none">বাতিল</Badge>,
+  const getStatusBadge = (status: string) => {
+    const base = "px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border shadow-sm transition-all duration-300";
+    switch (status) {
+      case 'pending': return <Badge variant="outline" className={cn(base, "bg-amber-500/10 text-amber-600 border-amber-200/50")}>Pending</Badge>;
+      case 'confirmed': return <Badge variant="outline" className={cn(base, "bg-blue-500/10 text-blue-600 border-blue-200/50")}>Confirmed</Badge>;
+      case 'processing': return <Badge variant="outline" className={cn(base, "bg-indigo-500/10 text-indigo-600 border-indigo-200/50")}>Processing</Badge>;
+      case 'shipped': return <Badge variant="outline" className={cn(base, "bg-purple-500/10 text-purple-600 border-purple-200/50")}>Shipped</Badge>;
+      case 'delivered': return <Badge variant="outline" className={cn(base, "bg-emerald-500/10 text-emerald-600 border-emerald-200/50")}>Delivered</Badge>;
+      case 'cancelled': return <Badge variant="outline" className={cn(base, "bg-rose-500/10 text-rose-600 border-rose-200/50")}>Cancelled</Badge>;
+      default: return <Badge variant="outline" className={base}>{status}</Badge>;
+    }
   };
 
   const paymentBadges: Record<string, any> = {
-    paid: <Badge variant="outline" className="border-emerald-200 text-emerald-600 bg-emerald-50/50">Paid</Badge>,
-    partial: <Badge variant="outline" className="border-indigo-200 text-indigo-600 bg-indigo-50/50">Partial</Badge>,
-    unpaid: <Badge variant="outline" className="border-rose-200 text-rose-600 bg-rose-50/50">Unpaid</Badge>,
-    refunded: <Badge variant="outline" className="border-slate-200 text-slate-600 bg-slate-50/50">Refunded</Badge>,
+    paid: <Badge variant="outline" className="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border-emerald-200 text-emerald-600 bg-emerald-50/50">Paid</Badge>,
+    partial: <Badge variant="outline" className="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border-indigo-200 text-indigo-600 bg-indigo-50/50">Partial</Badge>,
+    unpaid: <Badge variant="outline" className="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border-rose-200 text-rose-600 bg-rose-50/50">Unpaid</Badge>,
+    refunded: <Badge variant="outline" className="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border-slate-200 text-slate-600 bg-slate-50/50">Refunded</Badge>,
   };
 
   const isLoading = isLoadingActive || isLoadingTrash;
 
-  if (isLoading && activeOrdersList.length === 0) {
-    return (
-      <div className="space-y-6 max-w-[1400px] mx-auto pb-10">
-        <div className="flex justify-between items-end"><Skeleton className="h-20 w-1/3" /><Skeleton className="h-12 w-48" /></div>
-        <div className="grid grid-cols-4 gap-4"><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /></div>
-        <Skeleton className="h-[600px] w-full mt-8" />
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-8 max-w-[1400px] mx-auto pb-12 animate-in fade-in duration-700">
+    <div className="space-y-8 max-w-[1400px] mx-auto pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between md:items-end gap-6">
-        <div className="space-y-1">
-          <h1 className="text-4xl font-black bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent uppercase tracking-tight">
-            ট্রানজ্যাকশন মাস্টার
-          </h1>
-          <div className="flex items-center gap-2">
-            <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black tracking-normal uppercase">Admin Terminal</Badge>
-            <p className="text-sm font-bold text-muted-foreground opacity-60 uppercase tracking-normal">Orders, Payments & Logistics</p>
+      {/* Premium Sticky Header */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-20 py-4 px-6 -mx-4 rounded-3xl border border-white/60 dark:border-slate-700/40 shadow-[0_8px_32px_rgba(0,0,0,0.06)] transition-all duration-300">
+        <div className="relative group">
+           <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500" />
+           <h1 className="text-2xl sm:text-3xl font-black text-primary uppercase tracking-tight flex items-center gap-3">
+             <Receipt className="w-8 h-8" />
+             ট্রানজ্যাকশন মাস্টার
+           </h1>
+           <p className="text-muted-foreground font-bold uppercase tracking-widest text-[9px] mt-0.5 opacity-60 ml-1">
+             Financial Matrix & Payment Hub
+           </p>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          {steadfastBalance !== undefined && (
+            <div className="bg-gradient-to-br from-indigo-500/5 to-purple-500/5 backdrop-blur-xl border border-indigo-100/50 dark:border-indigo-900/40 rounded-2xl px-5 py-3 shadow-lg flex items-center gap-3 transition-all hover:scale-[1.02] active:scale-95 group">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:rotate-12 transition-transform duration-500">
+                 <CreditCard className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest opacity-60">Courier Balance</p>
+                <p className="font-black text-indigo-600 dark:text-indigo-400 text-lg tracking-tighter">৳{steadfastBalance.toLocaleString() || 0}</p>
+              </div>
+            </div>
+          )}
+          
+          <Button 
+            variant="outline"
+            className="rounded-2xl h-12 px-6 font-black uppercase tracking-widest text-xs gap-2 border-white/60 bg-white/40 backdrop-blur-xl transition-all hover:bg-white/60 active:scale-95"
+            onClick={() => window.print()}
+          >
+            <FileText className="w-4 h-4" />
+            রিপোর্ট
+          </Button>
+        </div>
+      </div>
+
+      {/* Analytics Summary */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-1">
+        {[
+          { label: "Total Revenue", value: `৳${statistics.totalSales.toLocaleString()}`, icon: TrendingUp, color: "text-primary", bg: "bg-primary/5", sub: "LIFETIME SALES VOLUME" },
+          { label: "Collected", value: `৳${statistics.totalCollected.toLocaleString()}`, icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-500/5", sub: "TOTAL FUNDS RECEIVED", progress: statistics.totalSales > 0 ? (statistics.totalCollected/statistics.totalSales)*100 : 0 },
+          { label: "In Courier", value: `৳${statistics.courierPipeline.toLocaleString()}`, icon: Truck, color: "text-indigo-500", bg: "bg-indigo-500/5", sub: "OUTSTANDING LOGISTICS" },
+          { label: "Pending", value: statistics.pendingCount, icon: ShieldAlert, color: "text-rose-500", bg: "bg-rose-500/5", sub: "AWAITING PROCESSING" }
+        ].map((stat) => (
+          <div key={stat.label} className="p-6 rounded-[2.2rem] bg-white/60 dark:bg-slate-800/40 backdrop-blur-xl border border-white/60 dark:border-slate-700/50 shadow-xl transition-all duration-500 hover:-translate-y-1.5 group overflow-hidden">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] opacity-60">{stat.label}</p>
+                 <p className="text-2xl font-black text-foreground tracking-tighter">{stat.value}</p>
+              </div>
+              <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110", stat.bg, stat.color)}>
+                 <stat.icon className="h-7 w-7" />
+              </div>
+            </div>
+            {stat.progress !== undefined ? (
+              <div className="mt-4">
+                <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-700/30 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500 transition-all duration-1000" style={{ width: `${stat.progress}%` }} />
+                </div>
+                <p className="text-[9px] font-black text-emerald-600 mt-2 uppercase tracking-widest">{Math.round(stat.progress)}% COMPLETED</p>
+              </div>
+            ) : (
+              <p className="mt-4 text-[9px] font-black text-slate-400 uppercase tracking-widest opacity-60">{stat.sub}</p>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <Tabs defaultValue="active" onValueChange={setActiveTab} className="w-full space-y-8 px-1">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <TabsList className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl p-1.5 rounded-full border border-white/60 dark:border-slate-700/50 h-auto flex-wrap w-fit shadow-lg shadow-black/5">
+            <TabsTrigger value="active" className="rounded-full px-8 py-3 text-[11px] font-black uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
+              Active Flows
+            </TabsTrigger>
+            <TabsTrigger value="trash" className="rounded-full px-8 py-3 text-[11px] font-black uppercase tracking-wider data-[state=active]:bg-rose-500 data-[state=active]:text-white transition-all">
+              Recycle Bin
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="flex flex-wrap items-center gap-4">
+             {selectedOrders.length > 0 && (
+               <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-4 duration-500 bg-primary/5 dark:bg-primary/10 pl-5 pr-2 py-1.5 rounded-full border border-primary/20">
+                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.1em]">
+                   {selectedOrders.length} Selected
+                 </span>
+                 <DropdownMenu>
+                   <DropdownMenuTrigger asChild>
+                     <Button variant="default" size="sm" className="h-9 px-4 rounded-full text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-md shadow-primary/20">
+                       Fleet Command <MoreHorizontal className="h-3 w-3 ml-2" />
+                     </Button>
+                   </DropdownMenuTrigger>
+                   <DropdownMenuContent align="end" className="w-60 rounded-2xl p-2 border-white/40 dark:border-slate-700/40 backdrop-blur-2xl shadow-3xl">
+                     <DropdownMenuLabel className="text-[9px] font-black uppercase tracking-widest text-slate-500/60 px-3 py-2">Execution Actions</DropdownMenuLabel>
+                     <DropdownMenuItem onClick={() => handleBulkAction('processing')} className="font-bold rounded-xl p-3 focus:bg-indigo-50">Mark Processing</DropdownMenuItem>
+                     <DropdownMenuItem onClick={() => handleBulkAction('shipped')} className="font-bold rounded-xl p-3 focus:bg-purple-50">Mark Shipped</DropdownMenuItem>
+                     <DropdownMenuItem onClick={() => handleBulkAction('delivered')} className="font-bold rounded-xl p-3 focus:bg-emerald-50 text-emerald-600">Mark Delivered</DropdownMenuItem>
+                     <DropdownMenuSeparator className="my-2 opacity-50" />
+                     {activeTab === 'active' ? (
+                       <>
+                        <DropdownMenuItem onClick={() => handleBulkAction('steadfast')} className="font-bold rounded-xl p-3 text-indigo-600 focus:bg-indigo-50">
+                          <Send className="mr-3 h-4 w-4" /> Dispatch to Courier
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleBulkAction('soft_delete')} className="font-bold rounded-xl p-3 text-rose-600 focus:bg-rose-50">
+                          <Trash2 className="mr-3 h-4 w-4" /> Move to Trash
+                        </DropdownMenuItem>
+                       </>
+                     ) : (
+                       <>
+                        <DropdownMenuItem onClick={() => handleBulkAction('restore')} className="font-bold rounded-xl p-3 text-emerald-600 focus:bg-emerald-50">
+                          <RotateCcw className="mr-3 h-4 w-4" /> Restore Selection
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleBulkAction('hard_delete')} className="font-bold rounded-xl p-3 text-rose-600 focus:bg-rose-50">
+                          <Trash2 className="mr-3 h-4 w-4" /> Purge Permanently
+                        </DropdownMenuItem>
+                       </>
+                     )}
+                   </DropdownMenuContent>
+                 </DropdownMenu>
+               </div>
+             )}
+
+             <div className="relative w-full sm:w-64 group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-all" />
+                <Input
+                  placeholder="Order Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 pr-12 h-12 bg-white/60 dark:bg-slate-800/60 border-white/60 dark:border-slate-700/50 rounded-2xl text-[12px] font-bold shadow-lg shadow-black/5 focus-visible:ring-primary/20 backdrop-blur-xl"
+                />
+             </div>
+
+             <div className="flex gap-2">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                   <SelectTrigger className="w-36 h-12 bg-white/60 dark:bg-slate-800/60 border-white/60 rounded-2xl text-[10px] font-black uppercase tracking-widest pl-6 shadow-lg shadow-black/5 backdrop-blur-xl">
+                     <SelectValue placeholder="Status" />
+                   </SelectTrigger>
+                   <SelectContent className="rounded-2xl">
+                     <SelectItem value="all">Any Status</SelectItem>
+                     <SelectItem value="pending">Pending</SelectItem>
+                     <SelectItem value="confirmed">Confirmed</SelectItem>
+                     <SelectItem value="processing">Processing</SelectItem>
+                     <SelectItem value="shipped">Shipped</SelectItem>
+                     <SelectItem value="delivered">Delivered</SelectItem>
+                   </SelectContent>
+                </Select>
+
+                <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+                   <SelectTrigger className="w-36 h-12 bg-white/60 dark:bg-slate-800/60 border-white/60 rounded-2xl text-[10px] font-black uppercase tracking-widest pl-6 shadow-lg shadow-black/5 backdrop-blur-xl">
+                     <SelectValue placeholder="Payment" />
+                   </SelectTrigger>
+                   <SelectContent className="rounded-2xl">
+                     <SelectItem value="all">Any Payment</SelectItem>
+                     <SelectItem value="paid">Paid</SelectItem>
+                     <SelectItem value="partial">Partial</SelectItem>
+                     <SelectItem value="unpaid">Unpaid</SelectItem>
+                   </SelectContent>
+                </Select>
+             </div>
           </div>
         </div>
-        
-        {steadfastBalance !== undefined && (
-          <Card className="bg-white/40 border-indigo-100 shadow-xl shadow-indigo-500/5 group hover:border-indigo-300 transition-all rounded-2xl">
-            <CardContent className="p-4 flex items-center gap-4">
-               <div className="h-12 w-12 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100 group-hover:bg-indigo-500 group-hover:text-white transition-all">
-                  <Package className="w-6 h-6" />
-               </div>
-               <div>
-                  <p className="text-[10px] font-black uppercase tracking-normal text-slate-400">Steadfast Funds</p>
-                  <p className="text-xl font-black text-indigo-700 tracking-tighter">৳{Number(steadfastBalance || 0).toLocaleString()}</p>
-               </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="shadow-xl shadow-primary/5 border-white/40 bg-white/60 backdrop-blur-xl group hover:border-primary/20 transition-all">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] font-black uppercase tracking-normal text-muted-foreground flex items-center justify-between">
-              Total Revenue <TrendingUp className="h-4 w-4 text-primary" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black text-primary tracking-tighter">৳{statistics.totalSales.toLocaleString()}</div>
-            <p className="text-[10px] font-bold text-slate-400 mt-1">LIFETIME SALES VOLUME</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="shadow-xl shadow-emerald-500/5 border-white/40 bg-white/60 backdrop-blur-xl group hover:border-emerald-200 transition-all">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] font-black uppercase tracking-normal text-muted-foreground flex items-center justify-between">
-              Collected <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black text-emerald-600 tracking-tighter">৳{statistics.totalCollected.toLocaleString()}</div>
-            <div className="flex items-center gap-2 mt-1">
-               <div className="flex-1 h-1 bg-emerald-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500" style={{ width: `${statistics.totalSales > 0 ? (statistics.totalCollected/statistics.totalSales)*100 : 0}%` }} />
-               </div>
-               <span className="text-[9px] font-black text-emerald-600">{statistics.totalSales > 0 ? Math.round((statistics.totalCollected/statistics.totalSales)*100) : 0}%</span>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="shadow-xl shadow-amber-500/5 border-white/40 bg-white/60 backdrop-blur-xl group hover:border-amber-200 transition-all">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] font-black uppercase tracking-normal text-muted-foreground flex items-center justify-between">
-              In Courier <MapPin className="h-4 w-4 text-amber-500" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black text-amber-600 tracking-tighter">৳{statistics.courierPipeline.toLocaleString()}</div>
-            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-normal">OUTSTANDING LOGISTICS</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="shadow-xl shadow-rose-500/5 border-white/40 bg-white/60 backdrop-blur-xl group hover:border-rose-200 transition-all">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] font-black uppercase tracking-normal text-muted-foreground flex items-center justify-between">
-              Pending Orders <ShieldAlert className="h-4 w-4 text-rose-500" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black text-rose-600 tracking-tighter">{statistics.pendingCount}</div>
-            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-normal">AWAITING PROCESSING</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        {/* Controls Section */}
-        <div className="flex flex-col gap-6 mb-8">
-           <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white/40 backdrop-blur-md p-3 rounded-[28px] border border-white/60 shadow-lg shadow-black/[0.02]">
-              <TabsList className="bg-slate-100/50 p-1 rounded-[20px] h-11 border border-transparent">
-                <TabsTrigger value="active" className="rounded-[16px] px-8 py-2 text-xs font-black uppercase tracking-normal data-[state=active]:bg-primary data-[state=active]:text-white transition-all shadow-none">Active Flows</TabsTrigger>
-                <TabsTrigger value="trash" className="rounded-[16px] px-8 py-2 text-xs font-black uppercase tracking-normal data-[state=active]:bg-rose-500 data-[state=active]:text-white transition-all shadow-none">Recycle Bin</TabsTrigger>
-              </TabsList>
-
-              <div className="flex items-center gap-3 w-full md:w-auto px-2">
-                 <div className="relative flex-1 md:w-72">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
-                      placeholder="Order ID, Customer or Phone..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-11 h-11 bg-white/80 border-white/40 rounded-full text-[11px] font-bold shadow-sm focus-visible:ring-primary/20"
-                    />
-                 </div>
-                 
-                 <div className="flex items-center gap-2">
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-32 h-11 bg-white/80 border-white/40 rounded-full text-[10px] font-black uppercase tracking-normal">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-2xl">
-                        <SelectItem value="all">ANY STATUS</SelectItem>
-                        <SelectItem value="pending">PENDING</SelectItem>
-                        <SelectItem value="processing">PROCESSING</SelectItem>
-                        <SelectItem value="shipped">SHIPPED</SelectItem>
-                        <SelectItem value="delivered">DELIVERED</SelectItem>
-                        <SelectItem value="cancelled">CANCELLED</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-                      <SelectTrigger className="w-32 h-11 bg-white/80 border-white/40 rounded-full text-[10px] font-black uppercase tracking-normal">
-                        <SelectValue placeholder="Payment" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-2xl">
-                        <SelectItem value="all">ANY PAYMENT</SelectItem>
-                        <SelectItem value="paid">PAID</SelectItem>
-                        <SelectItem value="partial">PARTIAL</SelectItem>
-                        <SelectItem value="unpaid">UNPAID</SelectItem>
-                      </SelectContent>
-                    </Select>
-                 </div>
-              </div>
-           </div>
-
-           {selectedOrders.length > 0 && (
-              <div className="flex items-center justify-between px-6 py-4 bg-primary/[0.03] border border-primary/10 rounded-2xl animate-in slide-in-from-top-4">
-                 <div className="flex items-center gap-4">
-                    <span className="text-xs font-black text-primary uppercase tracking-normal bg-primary/10 px-4 py-1.5 rounded-full">
-                       {selectedOrders.length} Transaction{selectedOrders.length > 1 ? 's' : ''} Selected
-                    </span>
-                 </div>
-                 <div className="flex items-center gap-2">
-                    <DropdownMenu>
-                       <DropdownMenuTrigger asChild>
-                          <Button size="sm" className="bg-primary hover:bg-primary/90 rounded-xl h-10 px-6 font-bold uppercase text-[10px] tracking-normal shadow-lg shadow-primary/20">
-                             Bulk Fleet Command <MoreHorizontal className="ml-2 h-4 w-4" />
-                          </Button>
-                       </DropdownMenuTrigger>
-                       <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-2xl border-primary/10">
-                          <DropdownMenuLabel className="text-[9px] font-black uppercase tracking-normal text-slate-400 px-3 pb-2 pt-1">Execution Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleBulkAction('processing')} className="rounded-xl font-bold p-3">Mark Processing</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleBulkAction('shipped')} className="rounded-xl font-bold p-3">Mark Shipped</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleBulkAction('delivered')} className="rounded-xl font-bold p-3">Mark Delivered</DropdownMenuItem>
-                          <DropdownMenuSeparator className="my-2 opacity-50" />
-                          {activeTab === 'active' ? (
-                             <>
-                                <DropdownMenuItem onClick={() => handleBulkAction('steadfast')} className="rounded-xl font-bold p-3 text-indigo-600">
-                                   <Send className="w-4 h-4 mr-2" /> Dispatch to Steadfast
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkAction('soft_delete')} className="rounded-xl font-bold p-3 text-rose-600">
-                                   <Trash2 className="w-4 h-4 mr-2" /> Move to Trash
-                                </DropdownMenuItem>
-                             </>
-                          ) : (
-                             <>
-                                <DropdownMenuItem onClick={() => handleBulkAction('restore')} className="rounded-xl font-bold p-3 text-emerald-600">
-                                   <RotateCcw className="w-4 h-4 mr-2" /> Restore Selection
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => {
-                                   if(window.confirm('Delete permanently?')) handleBulkAction('hard_delete');
-                                }} className="rounded-xl font-bold p-3 text-rose-600">
-                                   <Trash2 className="w-4 h-4 mr-2" /> Purge Permanently
-                                </DropdownMenuItem>
-                             </>
-                          )}
-                       </DropdownMenuContent>
-                    </DropdownMenu>
-                 </div>
-              </div>
-           )}
-        </div>
-
-        {/* Table Content */}
-        <TabsContent value={activeTab} className="mt-0">
-          <div className="bg-white/60 backdrop-blur-xl border border-white/60 rounded-[32px] shadow-2xl shadow-black/[0.02] overflow-hidden">
-            <div className="overflow-x-auto min-h-[600px] no-scrollbar">
-              <Table>
-                <TableHeader className="bg-slate-50/50">
-                  <TableRow className="hover:bg-transparent border-slate-100">
-                    <TableHead className="w-12 pl-8">
-                       <Checkbox checked={selectedOrders.length > 0 && selectedOrders.length === filteredOrders.length} onCheckedChange={toggleSelectAll} />
-                    </TableHead>
-                    <TableHead className="font-black text-[10px] uppercase tracking-normal text-slate-500 py-6">Transaction ID</TableHead>
-                    <TableHead className="font-black text-[10px] uppercase tracking-normal text-slate-500">Customer Intelligence</TableHead>
-                    <TableHead className="font-black text-[10px] uppercase tracking-normal text-slate-500">Financial Matrix</TableHead>
-                    <TableHead className="text-center font-black text-[10px] uppercase tracking-normal text-slate-500">Logistics & Risk</TableHead>
-                    <TableHead className="text-center font-black text-[10px] uppercase tracking-normal text-slate-500">Flow Status</TableHead>
-                    <TableHead className="text-right pr-8 font-black text-[10px] uppercase tracking-normal text-slate-500">Operational Hub</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredOrders.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="h-96 text-center">
-                        <div className="flex flex-col items-center justify-center opacity-40">
-                           <Receipt className="h-16 w-16 mb-6 text-primary" />
-                           <h3 className="text-xl font-black text-primary uppercase tracking-tight">No Flow Detected</h3>
-                           <p className="text-xs font-bold mt-2">Try adjusting filters or checking the recycle bin.</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredOrders.map(order => {
-                      const tAmt = order.total_amount || 0;
-                      const pAmt = order.payment_status === "paid" ? tAmt : (order.advance_payment || order.paid_amount || 0);
-                      const dAmt = tAmt - pAmt;
-
-                      return (
-                        <TableRow key={order.id} className="hover:bg-slate-50/50 transition-all border-slate-50 group">
-                          <TableCell className="pl-8 py-6">
-                            <Checkbox checked={selectedOrders.includes(order.id)} onCheckedChange={() => toggleSelect(order.id)} />
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col">
-                              <span className="font-black text-primary text-base">#{order.id.slice(-8).toUpperCase()}</span>
-                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-normal">
-                                {order.created_at ? format(new Date(order.created_at), "dd MMM, yyyy HH:mm") : 'UNTYPED'}
-                              </span>
+        <TabsContent value={activeTab} className="mt-0 outline-none">
+          <Card className="border-none bg-white/40 dark:bg-slate-800/30 backdrop-blur-xl rounded-[2.5rem] shadow-2xl shadow-black/5 overflow-hidden border border-white/40 dark:border-slate-700/30">
+            <div className="overflow-x-auto no-scrollbar">
+                <Table>
+                    <TableHeader className="bg-slate-100/30 dark:bg-slate-900/30">
+                      <TableRow className="hover:bg-transparent border-slate-100/50 dark:border-slate-700/50">
+                        <TableHead className="w-12 pl-8">
+                           <Checkbox checked={selectedOrders.length > 0 && selectedOrders.length === filteredOrders.length} onCheckedChange={toggleSelectAll} />
+                        </TableHead>
+                        <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-500 py-6 min-w-[150px]">Transaction</TableHead>
+                        <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-500 min-w-[180px]">Customer Hub</TableHead>
+                        <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-500 min-w-[200px]">Financial Matrix</TableHead>
+                        <TableHead className="text-center font-black text-[10px] uppercase tracking-widest text-slate-500">Logistics & Risk</TableHead>
+                        <TableHead className="text-center font-black text-[10px] uppercase tracking-widest text-slate-500">Flow Status</TableHead>
+                        <TableHead className="text-right pr-8 font-black text-[10px] uppercase tracking-widest text-slate-500">Operations</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {isLoading ? (
+                        Array(5).fill(0).map((_, i) => (
+                          <TableRow key={i}>
+                            <TableCell colSpan={7} className="p-8">
+                               <Skeleton className="h-12 w-full rounded-xl" />
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : filteredOrders.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="h-96 text-center">
+                            <div className="flex flex-col items-center justify-center p-12 opacity-40">
+                              <Receipt className="h-16 w-16 mb-6 text-primary" />
+                              <h3 className="text-xl font-black text-primary uppercase tracking-tight">No Flow Detected</h3>
+                              <p className="text-xs font-bold mt-2">Try adjusting filters or checking the recycle bin.</p>
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col">
-                              <span className="font-black text-slate-800 text-sm truncate max-w-[180px]">{order.customer_name || 'Anonymous User'}</span>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                 <Phone className="w-3 h-3 text-primary/40" />
-                                 <span className="text-[11px] font-mono text-slate-500">{order.customer_phone}</span>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-6">
-                               <div className="space-y-1">
-                                  <div className="text-[9px] font-black text-slate-400 uppercase tracking-normal italic">Total Bill</div>
-                                  <div className="text-lg font-black text-slate-800 tracking-tighter">৳{tAmt.toLocaleString()}</div>
-                               </div>
-                               <div className="space-y-1">
-                                  <div className="text-[9px] font-black text-slate-400 uppercase tracking-normal italic">Paid/Due</div>
-                                  <div className="flex items-center gap-2">
-                                     <span className="text-sm font-black text-emerald-600">৳{pAmt.toLocaleString()}</span>
-                                     <span className="text-slate-300">/</span>
-                                     <span className={`text-sm font-black ${dAmt > 0 ? 'text-rose-600' : 'text-slate-300 font-normal tracking-normal'}`}>৳{dAmt.toLocaleString()}</span>
-                                  </div>
-                               </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                             <div className="flex flex-col items-center gap-2">
-                                <div className="flex items-center gap-1.5">
-                                   {order.fraud_risk === 'high' ? (
-                                      <Badge className="bg-rose-500 text-white border-none text-[8px] font-black px-2 py-0">HIGH RISK</Badge>
-                                   ) : order.fraud_risk === 'medium' ? (
-                                      <Badge className="bg-amber-500 text-white border-none text-[8px] font-black px-2 py-0">MID RISK</Badge>
-                                   ) : order.fraud_risk === 'low' ? (
-                                      <Badge className="bg-emerald-500 text-white border-none text-[8px] font-black px-2 py-0">STABLE</Badge>
-                                   ) : (
-                                      <Button variant="ghost" className="h-5 text-[8px] font-black p-0 uppercase underline decoration-primary/20 hover:text-primary transition-all" onClick={() => handleFraudCheck(order)}>Verification Req.</Button>
-                                   )}
-                                </div>
-                                
-                                {order.steadfast_consignment_id ? (
-                                   <Badge variant="outline" className="border-indigo-100 bg-indigo-50/50 text-indigo-600 font-black text-[8px] flex items-center gap-1">
-                                      <Send className="w-2 h-2" /> Steadfast #{order.steadfast_consignment_id}
-                                   </Badge>
-                                ) : (
-                                   <span className="text-[10px] font-black text-slate-300 uppercase italic">Offline Cargo</span>
-                                )}
-                             </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                             <div className="flex flex-col items-center gap-1.5">
-                                {statusBadges[order.status || 'pending']}
-                                {paymentBadges[order.payment_status || 'unpaid']}
-                             </div>
-                          </TableCell>
-                          <TableCell className="text-right pr-8">
-                             <div className="flex items-center justify-end gap-2">
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="h-10 w-10 rounded-full hover:bg-primary/5 hover:text-primary border border-transparent hover:border-primary/10 transition-all shadow-sm shadow-black/[0.02]"
-                                  onClick={() => openDialog('details', order)}
-                                >
-                                   <Eye className="h-4 w-4" />
-                                </Button>
-
-                                <DropdownMenu>
-                                   <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-slate-100 border border-transparent hover:border-slate-200 shadow-sm shadow-black/[0.02]">
-                                         <MoreHorizontal className="h-4 w-4" />
-                                      </Button>
-                                   </DropdownMenuTrigger>
-                                   <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-2xl border-primary/10">
-                                      <DropdownMenuLabel className="text-[9px] font-black uppercase tracking-normal text-slate-400 px-3 pb-2 pt-1">Matrix Controls</DropdownMenuLabel>
-                                      
-                                      <DropdownMenuItem onClick={() => openDialog('details', order)} className="rounded-xl font-bold p-3">
-                                         <FileText className="w-4 h-4 mr-2 text-primary" /> Comprehensive Ledger
-                                      </DropdownMenuItem>
-
-                                      <DropdownMenuSeparator className="my-2 opacity-50" />
-
-                                      <DropdownMenuItem onClick={() => openDialog('collect', order)} disabled={order.payment_status === 'paid'} className="rounded-xl font-bold p-3">
-                                         <Wallet className="w-4 h-4 mr-2 text-emerald-500" /> Collect Transaction
-                                      </DropdownMenuItem>
-
-                                      <DropdownMenuItem onClick={() => openDialog('refund', order)} className="rounded-xl font-bold p-3">
-                                         <ArrowLeftRight className="w-4 h-4 mr-2 text-rose-500" /> Process Refund
-                                      </DropdownMenuItem>
-
-                                      {order.steadfast_consignment_id && (
-                                         <DropdownMenuItem onClick={() => openDialog('tracking', order)} className="rounded-xl font-bold p-3 text-indigo-600">
-                                            <MapPin className="w-4 h-4 mr-2" /> Real-time Tracking
-                                         </DropdownMenuItem>
-                                      )}
-
-                                      <DropdownMenuSeparator className="my-2 opacity-50" />
-                                      
-                                      {activeTab === 'active' ? (
-                                         <DropdownMenuItem onClick={() => softDelete.mutate(order.id)} className="rounded-xl font-bold p-3 text-rose-600 focus:bg-rose-50">
-                                            <Trash2 className="w-4 h-4 mr-2" /> Termination (Trash)
-                                         </DropdownMenuItem>
-                                      ) : (
-                                         <>
-                                            <DropdownMenuItem onClick={() => restoreOrder.mutate(order.id)} className="rounded-xl font-bold p-3 text-emerald-600">
-                                               <RotateCcw className="w-4 h-4 mr-2" /> Reactivate Order
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => hardDelete.mutate(order.id)} className="rounded-xl font-bold p-3 text-rose-600 focus:bg-rose-50">
-                                               <Trash2 className="w-4 h-4 mr-2" /> Critical Purge
-                                            </DropdownMenuItem>
-                                         </>
-                                      )}
-                                   </DropdownMenuContent>
-                                </DropdownMenu>
-                             </div>
                           </TableCell>
                         </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
+                      ) : (
+                        filteredOrders.map(order => {
+                          const tAmt = order.total_amount || 0;
+                          const pAmt = order.payment_status === "paid" ? tAmt : (order.advance_payment || order.paid_amount || 0);
+                          const dAmt = tAmt - pAmt;
+
+                          return (
+                            <TableRow key={order.id} className="group hover:bg-white/40 dark:hover:bg-slate-700/20 transition-all duration-300 border-slate-50 dark:border-slate-800">
+                              <TableCell className="pl-8">
+                                <Checkbox checked={selectedOrders.includes(order.id)} onCheckedChange={() => toggleSelect(order.id)} className="transition-transform duration-500 group-hover:scale-110" />
+                              </TableCell>
+                              <TableCell className="py-6">
+                                <div className="flex flex-col space-y-1.5">
+                                  <span className="font-black text-primary text-base tracking-tighter">{order.order_number?.startsWith('#') ? order.order_number : `#${order.order_number || order.id.slice(-8).toUpperCase()}`}</span>
+                                  <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.1em] opacity-80">
+                                     <Clock className="w-3 h-3" />
+                                     {order.created_at ? format(new Date(order.created_at), "dd MMM, yyyy") : 'Unknown'}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-col gap-0.5">
+                                  <div className="font-black text-slate-800 dark:text-slate-200 text-sm uppercase tracking-tight line-clamp-1">{order.customer_name || "Guest Checkout"}</div>
+                                  <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 group-hover:text-primary transition-colors">
+                                    <Phone className="w-2.5 h-2.5" />
+                                    {order.customer_phone || "No Phone"}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-6">
+                                   <div className="space-y-1">
+                                      <div className="text-[9px] font-black text-slate-400 uppercase tracking-normal italic">Total Bill</div>
+                                      <div className="text-lg font-black text-slate-800 dark:text-slate-200 tracking-tighter">৳{tAmt.toLocaleString()}</div>
+                                   </div>
+                                   <div className="h-8 w-px bg-slate-100 dark:bg-slate-700/50" />
+                                   <div className="space-y-1">
+                                      <div className="text-[9px] font-black text-slate-400 uppercase tracking-normal italic">Paid/Due</div>
+                                      <div className="flex items-center gap-2">
+                                         <span className="text-sm font-black text-emerald-600">৳{pAmt.toLocaleString()}</span>
+                                         <span className="text-slate-200">/</span>
+                                         <span className={cn("text-sm font-black", dAmt > 0 ? 'text-rose-600' : 'text-slate-300')}>৳{dAmt.toLocaleString()}</span>
+                                      </div>
+                                   </div>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-center">
+                                 <div className="flex flex-col items-center gap-2">
+                                    <div className="flex items-center gap-1.5">
+                                       {order.fraud_risk === 'high' ? (
+                                          <Badge className="bg-rose-500 text-white border-none text-[8px] font-black px-2 py-0">HIGH RISK</Badge>
+                                       ) : order.fraud_risk === 'medium' ? (
+                                          <Badge className="bg-amber-500 text-white border-none text-[8px] font-black px-2 py-0">MID RISK</Badge>
+                                       ) : order.fraud_risk === 'low' ? (
+                                          <Badge className="bg-emerald-500 text-white border-none text-[8px] font-black px-2 py-0">STABLE</Badge>
+                                       ) : (
+                                          <Button variant="ghost" className="h-5 text-[8px] font-black p-0 uppercase underline decoration-primary/20 hover:text-primary" onClick={() => handleFraudCheck(order)}>Verification</Button>
+                                       )}
+                                    </div>
+                                    {order.steadfast_consignment_id && (
+                                       <Badge variant="outline" className="border-indigo-100 bg-indigo-50/10 text-indigo-600 font-black text-[8px]">
+                                          #{order.steadfast_consignment_id}
+                                       </Badge>
+                                    )}
+                                 </div>
+                              </TableCell>
+                              <TableCell className="text-center">
+                                 <div className="flex flex-col items-center gap-1.5">
+                                    {getStatusBadge(order.order_status || order.status)}
+                                    {paymentBadges[order.payment_status || 'unpaid']}
+                                 </div>
+                              </TableCell>
+                              <TableCell className="text-right pr-8">
+                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                   <Button 
+                                     variant="outline" 
+                                     size="icon" 
+                                     className="h-10 w-10 rounded-xl bg-white dark:bg-slate-800 hover:bg-primary hover:text-white transition-all shadow-md"
+                                     onClick={() => openDialog('details', order)}
+                                   >
+                                      <Eye className="h-4 w-4" />
+                                   </Button>
+                                   <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 shadow-md">
+                                          <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 border-white/40 dark:border-slate-700/40 backdrop-blur-2xl shadow-3xl">
+                                        <DropdownMenuLabel className="text-[9px] font-black uppercase tracking-widest text-slate-500/60 px-3 py-2">Matrix Controls</DropdownMenuLabel>
+                                        
+                                        <DropdownMenuItem onClick={() => openDialog('details', order)} className="rounded-xl font-bold p-3">
+                                           <FileText className="w-4 h-4 mr-3 text-primary" /> Comprehensive Ledger
+                                        </DropdownMenuItem>
+
+                                        <DropdownMenuSeparator className="opacity-50" />
+
+                                        <DropdownMenuItem onClick={() => openDialog('collect', order)} disabled={order.payment_status === 'paid'} className="rounded-xl font-bold p-3">
+                                           <Wallet className="w-4 h-4 mr-3 text-emerald-500" /> Collect Payment
+                                        </DropdownMenuItem>
+
+                                        <DropdownMenuItem onClick={() => openDialog('refund', order)} className="rounded-xl font-bold p-3">
+                                           <ArrowLeftRight className="w-4 h-4 mr-3 text-rose-500" /> Process Refund
+                                        </DropdownMenuItem>
+
+                                        {order.steadfast_consignment_id && (
+                                           <DropdownMenuItem onClick={() => openDialog('tracking', order)} className="rounded-xl font-bold p-3 text-indigo-600">
+                                              <MapPin className="w-4 h-4 mr-3" /> Real-time Tracking
+                                           </DropdownMenuItem>
+                                        )}
+
+                                        <DropdownMenuSeparator className="opacity-50" />
+                                        
+                                        {activeTab === 'active' ? (
+                                           <DropdownMenuItem onClick={() => softDelete.mutate(order.id)} className="rounded-xl font-bold p-3 text-rose-600 focus:bg-rose-50">
+                                              <Trash2 className="w-4 h-4 mr-3" /> Termination (Trash)
+                                           </DropdownMenuItem>
+                                        ) : (
+                                           <>
+                                              <DropdownMenuItem onClick={() => restoreOrder.mutate(order.id)} className="rounded-xl font-bold p-3 text-emerald-600">
+                                                 <RotateCcw className="w-4 h-4 mr-3" /> Reactivate Order
+                                              </DropdownMenuItem>
+                                              <DropdownMenuItem onClick={() => hardDelete.mutate(order.id)} className="rounded-xl font-bold p-3 text-rose-600 focus:bg-rose-50">
+                                                 <Trash2 className="w-4 h-4 mr-3" /> Critical Purge
+                                              </DropdownMenuItem>
+                                           </>
+                                        )}
+                                      </DropdownMenuContent>
+                                   </DropdownMenu>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                </Table>
             </div>
-          </div>
+          </Card>
         </TabsContent>
       </Tabs>
 

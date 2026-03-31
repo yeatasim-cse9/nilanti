@@ -330,89 +330,96 @@ const AdminIncompleteOrders = () => {
             </div>
           ) : (
             <ScrollArea className="h-[500px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>কাস্টমার</TableHead>
-                    <TableHead>ফোন</TableHead>
-                    <TableHead>ঠিকানা</TableHead>
-                    <TableHead>কার্ট মূল্য</TableHead>
-                    <TableHead>সম্পূর্ণতা</TableHead>
-                    <TableHead>সময়</TableHead>
-                    <TableHead className="text-right">অ্যাকশন</TableHead>
+              <Table className="table-responsive-stack">
+                <TableHeader className="bg-slate-50/80 hidden md:table-header-group">
+                  <TableRow className="border-slate-100">
+                    <TableHead className="font-black text-[10px] uppercase tracking-normal text-slate-700">কাস্টমার</TableHead>
+                    <TableHead className="font-black text-[10px] uppercase tracking-normal text-slate-700">ফোন</TableHead>
+                    <TableHead className="font-black text-[10px] uppercase tracking-normal text-slate-700">ঠিকানা</TableHead>
+                    <TableHead className="font-black text-[10px] uppercase tracking-normal text-slate-700">কার্ট মূল্য</TableHead>
+                    <TableHead className="font-black text-[10px] uppercase tracking-normal text-slate-700">সম্পূর্ণতা</TableHead>
+                    <TableHead className="font-black text-[10px] uppercase tracking-normal text-slate-700">সময়</TableHead>
+                    <TableHead className="text-right font-black text-[10px] uppercase tracking-normal text-slate-700 pr-6">অ্যাকশন</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {orders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell>
-                        <span className="font-medium">
-                          {order.customer_name || "—"}
-                        </span>
-                        {order.customer_email && (
-                          <p className="text-xs text-muted-foreground">
-                            {order.customer_email}
-                          </p>
-                        )}
+                    <TableRow key={order.id} className="hover:bg-slate-50/80 transition-colors">
+                      <TableCell data-label="কাস্টমার">
+                        <div className="flex flex-col md:text-left text-right">
+                          <span className="font-black text-slate-800">
+                            {order.customer_name || "—"}
+                          </span>
+                          {order.customer_email && (
+                            <p className="text-xs text-muted-foreground font-mono">
+                              {order.customer_email}
+                            </p>
+                          )}
+                        </div>
                       </TableCell>
-                      <TableCell>
-                        {order.customer_phone ? (
-                          <a
-                            href={`tel:${order.customer_phone}`}
-                            className="text-primary hover:underline"
-                          >
-                            {order.customer_phone}
-                          </a>
-                        ) : (
-                          "—"
-                        )}
+                      <TableCell data-label="ফোন">
+                        <div className="flex justify-end md:justify-start">
+                          {order.customer_phone ? (
+                            <a
+                              href={`tel:${order.customer_phone}`}
+                              className="text-primary hover:underline font-black text-sm"
+                            >
+                              {order.customer_phone}
+                            </a>
+                          ) : (
+                            <span className="text-slate-400">—</span>
+                          )}
+                        </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="max-w-[150px] truncate">
+                      <TableCell data-label="ঠিকানা">
+                        <div className="md:max-w-[150px] truncate md:text-left text-right font-medium text-slate-600">
                           {order.shipping_address || order.shipping_city || "—"}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        {order.cart_data && order.cart_data.length > 0 ? (
-                          <div>
-                            <span className="font-medium">
-                              {formatPrice(getCartTotal(order.cart_data))}
-                            </span>
-                            <p className="text-xs text-muted-foreground">
-                              {order.cart_data.length} টি পণ্য
-                            </p>
-                          </div>
-                        ) : (
-                          "—"
-                        )}
+                      <TableCell data-label="কার্ট মূল্য">
+                        <div className="flex flex-col md:text-left text-right">
+                          {order.cart_data && order.cart_data.length > 0 ? (
+                            <>
+                              <span className="font-black text-primary">
+                                {formatPrice(getCartTotal(order.cart_data))}
+                              </span>
+                              <p className="text-[10px] font-black uppercase text-slate-400">
+                                {order.cart_data.length} টি পণ্য
+                              </p>
+                            </>
+                          ) : (
+                            <span className="text-slate-400">—</span>
+                          )}
+                        </div>
                       </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            getCompletionPercentage(order) > 60
-                              ? "default"
-                              : "secondary"
-                          }
-                        >
-                          {getCompletionPercentage(order)}%
-                        </Badge>
+                      <TableCell data-label="সম্পূর্ণতা">
+                        <div className="flex justify-end md:justify-start">
+                          <Badge
+                            className={`rounded-full font-black text-[10px] uppercase ${
+                              getCompletionPercentage(order) > 60
+                                ? "bg-emerald-100 text-emerald-700 border-none"
+                                : "bg-amber-100 text-amber-700 border-none"
+                            }`}
+                          >
+                            {getCompletionPercentage(order)}% FILLED
+                          </Badge>
+                        </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Clock className="h-3 w-3" />
+                      <TableCell data-label="সময়">
+                        <div className="flex items-center justify-end md:justify-start gap-1 text-[11px] font-bold text-slate-500 bg-slate-100/50 w-fit px-2 py-0.5 rounded-md ml-auto md:ml-0">
+                          <Clock className="h-3.5 w-3.5" />
                           {formatDistanceToNow(new Date(order.last_updated_at), {
                             addSuffix: true,
                             locale: bn,
                           })}
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell data-label="অ্যাকশন" className="text-right md:pr-6">
                         <div className="flex items-center justify-end gap-2">
-                          {/* Convert to Order Button */}
                           <Button
                             variant="outline"
                             size="sm"
-                            className="gap-1"
+                            className="h-10 min-h-[44px] px-4 rounded-xl gap-2 font-black text-[10px] uppercase border-primary/20 text-primary hover:bg-primary/5 transition-all"
                             onClick={() => handleConvertToOrder(order)}
                             title="অর্ডারে রূপান্তর করুন"
                           >
@@ -422,26 +429,34 @@ const AdminIncompleteOrders = () => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="h-10 w-10 min-h-[44px] min-w-[44px] rounded-full hover:bg-slate-100"
                             onClick={() => setSelectedOrder(order)}
                           >
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-4 w-4 text-slate-600" />
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <Trash2 className="h-4 w-4 text-destructive" />
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                className="h-10 w-10 min-h-[44px] min-w-[44px] rounded-full hover:bg-rose-50 group"
+                              >
+                                <Trash2 className="h-4 w-4 text-slate-400 group-hover:text-rose-500 transition-colors" />
                               </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent>
+                            <AlertDialogContent className="rounded-[32px] border-primary/10 shadow-2xl">
                               <AlertDialogHeader>
-                                <AlertDialogTitle>ডিলিট করতে চান?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  এই অসম্পূর্ণ অর্ডার ডিলিট করা হবে।
+                                <AlertDialogTitle className="text-xl font-black uppercase tracking-tight text-slate-800">ডিলিট করতে চান?</AlertDialogTitle>
+                                <AlertDialogDescription className="font-bold text-slate-500">
+                                  এই অসম্পূর্ণ অর্ডার ডিলিট করা হবে। এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>না</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => deleteOrder(order.id)}>
+                              <AlertDialogFooter className="gap-2">
+                                <AlertDialogCancel className="rounded-2xl font-bold">না</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => deleteOrder(order.id)}
+                                  className="bg-rose-500 hover:bg-rose-600 rounded-2xl font-bold"
+                                >
                                   হ্যাঁ, ডিলিট করুন
                                 </AlertDialogAction>
                               </AlertDialogFooter>

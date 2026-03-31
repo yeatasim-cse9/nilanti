@@ -79,9 +79,16 @@ export interface PoliceStation {
 
 // ─── Headers ──────────────────────────────────────────────────────────────────
 
-const getHeaders = () => ({
-  "Api-Key": STEADFAST_API_KEY,
-  "Secret-Key": STEADFAST_SECRET_KEY,
+// ─── Headers ──────────────────────────────────────────────────────────────────
+
+interface SteadfastHeaders {
+  apiKey?: string;
+  secretKey?: string;
+}
+
+const getHeaders = (config?: SteadfastHeaders) => ({
+  "Api-Key": config?.apiKey || STEADFAST_API_KEY,
+  "Secret-Key": config?.secretKey || STEADFAST_SECRET_KEY,
   "Content-Type": "application/json",
   "Accept": "application/json",
 });
@@ -129,10 +136,13 @@ export interface CreateOrderPayload {
   delivery_type?: 0 | 1; // 0 = home delivery, 1 = point delivery / hub pickup
 }
 
-export async function createSteadfastOrder(payload: CreateOrderPayload): Promise<SteadfastResponse> {
+export async function createSteadfastOrder(
+  payload: CreateOrderPayload,
+  config?: SteadfastHeaders
+): Promise<SteadfastResponse> {
   const response = await fetch(`${STEADFAST_API_URL}/create_order`, {
     method: "POST",
-    headers: getHeaders(),
+    headers: getHeaders(config),
     body: JSON.stringify(payload),
   });
   return parseSteadfastResponse(response);
@@ -141,14 +151,17 @@ export async function createSteadfastOrder(payload: CreateOrderPayload): Promise
 // ─── 2. Bulk Order Create ─────────────────────────────────────────────────────
 // POST /create_order/bulk-order  (max 500 items)
 
-export async function createBulkSteadfastOrders(orders: BulkOrderItem[]): Promise<BulkOrderResult[]> {
+export async function createBulkSteadfastOrders(
+  orders: BulkOrderItem[],
+  config?: SteadfastHeaders
+): Promise<BulkOrderResult[]> {
   if (orders.length > 500) {
     throw new Error("Maximum 500 items allowed per bulk order request.");
   }
 
   const response = await fetch(`${STEADFAST_API_URL}/create_order/bulk-order`, {
     method: "POST",
-    headers: getHeaders(),
+    headers: getHeaders(config),
     body: JSON.stringify({ data: JSON.stringify(orders) }),
   });
   return parseSteadfastResponse<BulkOrderResult[]>(response);
@@ -163,7 +176,8 @@ export type StatusLookupType = "cid" | "invoice" | "trackingcode";
 
 export async function checkSteadfastStatus(
   value: string,
-  type: StatusLookupType = "cid"
+  type: StatusLookupType = "cid",
+  config?: SteadfastHeaders
 ): Promise<SteadfastResponse> {
   const endpointMap: Record<StatusLookupType, string> = {
     cid: `status_by_cid/${value}`,
@@ -172,22 +186,25 @@ export async function checkSteadfastStatus(
   };
 
   const response = await fetch(`${STEADFAST_API_URL}/${endpointMap[type]}`, {
-    headers: getHeaders(),
+    headers: getHeaders(config),
   });
   return parseSteadfastResponse(response);
 }
 
 // Convenience wrappers
-export const checkStatusByCID = (id: string) => checkSteadfastStatus(id, "cid");
-export const checkStatusByInvoice = (invoice: string) => checkSteadfastStatus(invoice, "invoice");
-export const checkStatusByTrackingCode = (code: string) => checkSteadfastStatus(code, "trackingcode");
+export const checkStatusByCID = (id: string, config?: SteadfastHeaders) => 
+  checkSteadfastStatus(id, "cid", config);
+export const checkStatusByInvoice = (invoice: string, config?: SteadfastHeaders) => 
+  checkSteadfastStatus(invoice, "invoice", config);
+export const checkStatusByTrackingCode = (code: string, config?: SteadfastHeaders) => 
+  checkSteadfastStatus(code, "trackingcode", config);
 
 // ─── 4. Check Current Balance ─────────────────────────────────────────────────
 // GET /get_balance
 
-export async function getSteadfastBalance(): Promise<SteadfastResponse> {
+export async function getSteadfastBalance(config?: SteadfastHeaders): Promise<SteadfastResponse> {
   const response = await fetch(`${STEADFAST_API_URL}/get_balance`, {
-    headers: getHeaders(),
+    headers: getHeaders(config),
   });
   return parseSteadfastResponse(response);
 }
@@ -202,10 +219,13 @@ export interface CreateReturnPayload {
   reason?: string;
 }
 
-export async function createReturnRequest(payload: CreateReturnPayload): Promise<ReturnRequest> {
+export async function createReturnRequest(
+  payload: CreateReturnPayload,
+  config?: SteadfastHeaders
+): Promise<ReturnRequest> {
   const response = await fetch(`${STEADFAST_API_URL}/create_return_request`, {
     method: "POST",
-    headers: getHeaders(),
+    headers: getHeaders(config),
     body: JSON.stringify(payload),
   });
   return parseSteadfastResponse<ReturnRequest>(response);
@@ -214,9 +234,9 @@ export async function createReturnRequest(payload: CreateReturnPayload): Promise
 // ─── 6. Single Return Request View ────────────────────────────────────────────
 // GET /get_return_request/{id}
 
-export async function getReturnRequest(id: number): Promise<ReturnRequest> {
+export async function getReturnRequest(id: number, config?: SteadfastHeaders): Promise<ReturnRequest> {
   const response = await fetch(`${STEADFAST_API_URL}/get_return_request/${id}`, {
-    headers: getHeaders(),
+    headers: getHeaders(config),
   });
   return parseSteadfastResponse<ReturnRequest>(response);
 }
@@ -224,9 +244,9 @@ export async function getReturnRequest(id: number): Promise<ReturnRequest> {
 // ─── 7. Get All Return Requests ───────────────────────────────────────────────
 // GET /get_return_requests
 
-export async function getReturnRequests(): Promise<ReturnRequest[]> {
+export async function getReturnRequests(config?: SteadfastHeaders): Promise<ReturnRequest[]> {
   const response = await fetch(`${STEADFAST_API_URL}/get_return_requests`, {
-    headers: getHeaders(),
+    headers: getHeaders(config),
   });
   return parseSteadfastResponse<ReturnRequest[]>(response);
 }
@@ -234,9 +254,9 @@ export async function getReturnRequests(): Promise<ReturnRequest[]> {
 // ─── 8. Get Payments ──────────────────────────────────────────────────────────
 // GET /payments
 
-export async function getPayments(): Promise<Payment[]> {
+export async function getPayments(config?: SteadfastHeaders): Promise<Payment[]> {
   const response = await fetch(`${STEADFAST_API_URL}/payments`, {
-    headers: getHeaders(),
+    headers: getHeaders(config),
   });
   return parseSteadfastResponse<Payment[]>(response);
 }
@@ -244,9 +264,9 @@ export async function getPayments(): Promise<Payment[]> {
 // ─── 9. Get Single Payment with Consignments ──────────────────────────────────
 // GET /payments/{payment_id}
 
-export async function getPaymentById(paymentId: number): Promise<Payment> {
+export async function getPaymentById(paymentId: number, config?: SteadfastHeaders): Promise<Payment> {
   const response = await fetch(`${STEADFAST_API_URL}/payments/${paymentId}`, {
-    headers: getHeaders(),
+    headers: getHeaders(config),
   });
   return parseSteadfastResponse<Payment>(response);
 }
@@ -254,9 +274,9 @@ export async function getPaymentById(paymentId: number): Promise<Payment> {
 // ─── 10. Get Police Stations ──────────────────────────────────────────────────
 // GET /police_stations
 
-export async function getPoliceStations(): Promise<PoliceStation[]> {
+export async function getPoliceStations(config?: SteadfastHeaders): Promise<PoliceStation[]> {
   const response = await fetch(`${STEADFAST_API_URL}/police_stations`, {
-    headers: getHeaders(),
+    headers: getHeaders(config),
   });
   return parseSteadfastResponse<PoliceStation[]>(response);
 }
