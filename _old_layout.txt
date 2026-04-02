@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState } from "react";
 import { Link, useNavigate, Outlet, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -13,6 +13,8 @@ import {
   LogOut,
   Menu,
   X,
+  Leaf,
+  ChevronRight,
   ChevronDown,
   AlertCircle,
   TrendingUp,
@@ -21,18 +23,12 @@ import {
   PlusCircle,
   Image,
   Puzzle,
-  ExternalLink,
-  Bell,
 } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useAdminData";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface MenuItem {
   icon: any;
@@ -55,49 +51,43 @@ const AdminLayout = () => {
   const location = useLocation();
   const { user, isAdmin, signOut, isLoading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [openGroups, setOpenGroups] = useState<string[]>(["অর্ডার", "পণ্য"]);
-
-  const storeName = settings?.store_name || "Nilanti";
-  const storeLogo = settings?.logo || "";
-
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [location.pathname]);
+  const [openGroups, setOpenGroups] = useState<string[]>(["αªàαª░αºìαªíαª╛αª░", "αª¬αªúαºìαª»"]);
 
   const menuStructure: MenuItemOrGroup[] = [
-    { icon: LayoutDashboard, label: "ড্যাশবোর্ড", href: "/admin" },
+    { icon: LayoutDashboard, label: "αªíαºìαª»αª╛αª╢αª¼αºïαª░αºìαªí", href: "/admin" },
     {
       icon: ShoppingCart,
-      label: "অর্ডার",
+      label: "αªàαª░αºìαªíαª╛αª░",
       href: "/admin/orders",
       children: [
-        { icon: AlertCircle, label: "অসম্পূর্ণ অর্ডার", href: "/admin/incomplete-orders" },
-        { icon: TrendingUp, label: "রিকভারি", href: "/admin/recovery-analytics" },
-        { icon: CreditCard, label: "পেমেন্ট", href: "/admin/payments" },
-        { icon: FileText, label: "ট্রানজ্যাকশন", href: "/admin/transactions" },
-        { icon: Users, label: "কাস্টমার", href: "/admin/customers" },
+        { icon: AlertCircle, label: "αªàαª╕αª«αºìαª¬αºéαª░αºìαªú αªàαª░αºìαªíαª╛αª░", href: "/admin/incomplete-orders" },
+        { icon: TrendingUp, label: "αª░αª┐αªòαª¡αª╛αª░αª┐ αªàαºìαª»αª╛αª¿αª╛αª▓αª┐αªƒαª┐αªòαºìαª╕", href: "/admin/recovery-analytics" },
+        { icon: CreditCard, label: "αª¬αºçαª«αºçαª¿αºìαªƒ", href: "/admin/payments" },
+        { icon: Users, label: "αªòαª╛αª╕αºìαªƒαª«αª╛αª░", href: "/admin/customers" },
       ],
     },
     {
       icon: Package,
-      label: "পণ্য",
+      label: "αª¬αªúαºìαª»",
       href: "/admin/products",
       children: [
-        { icon: PlusCircle, label: "নতুন পণ্য", href: "/admin/products/new" },
-        { icon: FolderTree, label: "ক্যাটাগরি", href: "/admin/categories" },
-        { icon: Tag, label: "কুপন", href: "/admin/coupons" },
-        { icon: Truck, label: "ডেলিভারি জোন", href: "/admin/delivery-zones" },
+        { icon: PlusCircle, label: "αª¿αªñαºüαª¿ αª¬αªúαºìαª»", href: "/admin/products/new" },
+        { icon: FolderTree, label: "αªòαºìαª»αª╛αªƒαª╛αªùαª░αª┐", href: "/admin/categories" },
+        { icon: Tag, label: "αªòαºüαª¬αª¿", href: "/admin/coupons" },
+        { icon: Truck, label: "αªíαºçαª▓αª┐αª¡αª╛αª░αª┐ αª£αºïαª¿", href: "/admin/delivery-zones" },
       ],
     },
-    { icon: MessageCircle, label: "লাইভ চ্যাট", href: "/admin/chat" },
-    {
-      icon: FileText,
-      label: "কন্টেন্ট",
+    { icon: MessageCircle, label: "αª▓αª╛αªçαª¡ αªÜαºìαª»αª╛αªƒ", href: "/admin/chat" },
+    { 
+      icon: FileText, 
+      label: "αªòαª¿αºìαªƒαºçαª¿αºìαªƒ", 
       href: "/admin/content",
-      children: [{ icon: Image, label: "ব্যানার", href: "/admin/banners" }],
+      children: [
+        { icon: Image, label: "αª¼αºìαª»αª╛αª¿αª╛αª░", href: "/admin/banners" },
+      ],
     },
-    { icon: Puzzle, label: "ইন্টিগ্রেশন", href: "/admin/integrations" },
-    { icon: Settings, label: "সেটিংস", href: "/admin/settings" },
+    { icon: Puzzle, label: "αªçαª¿αºìαªƒαª┐αªùαºìαª░αºçαª╢αª¿", href: "/admin/integrations" },
+    { icon: Settings, label: "αª╕αºçαªƒαª┐αªéαª╕", href: "/admin/settings" },
   ];
 
   const toggleGroup = (label: string) => {
@@ -106,21 +96,25 @@ const AdminLayout = () => {
     );
   };
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-muted-foreground">লোড হচ্ছে...</p>
+        <p>αª▓αºïαªí αª╣αªÜαºìαª¢αºç...</p>
       </div>
     );
   }
 
+  // Auth check
   if (!user || !isAdmin) {
     navigate("/auth");
     return null;
   }
 
   const isActive = (href: string) => {
-    if (href === "/admin") return location.pathname === "/admin";
+    if (href === "/admin") {
+      return location.pathname === "/admin";
+    }
     return location.pathname === href || location.pathname.startsWith(href + "/");
   };
 
@@ -129,7 +123,9 @@ const AdminLayout = () => {
     return group.children.some((child) => isActive(child.href));
   };
 
-  const isMenuGroup = (item: MenuItemOrGroup): item is MenuGroup => "children" in item;
+  const isMenuGroup = (item: MenuItemOrGroup): item is MenuGroup => {
+    return "children" in item;
+  };
 
   const renderMenuItem = (item: MenuItem, isChild = false) => (
     <Link
@@ -219,15 +215,14 @@ const AdminLayout = () => {
             <Menu className="h-5 w-5" />
           </button>
           <Link to="/admin" className="flex items-center gap-2">
-            {storeLogo ? (
-              <img src={storeLogo} alt={storeName} className="h-6 w-auto" />
+            {settings?.logo ? (
+              <img src={settings.logo} alt="Logo" className="h-6 w-auto" />
             ) : (
-              <span className="font-bold text-primary text-lg">{storeName}</span>
+              <Leaf className="h-5 w-5 text-primary" />
             )}
+            <span className="font-bold text-primary">αªàαºìαª»αª╛αªíαª«αª┐αª¿</span>
           </Link>
-          <button className="p-2 hover:bg-muted rounded-lg relative">
-            <Bell className="h-5 w-5 text-muted-foreground" />
-          </button>
+          <div className="w-10" />
         </div>
       </header>
 
@@ -252,15 +247,15 @@ const AdminLayout = () => {
               <div className="flex items-center justify-between">
                 <Link to="/admin" className="flex items-center gap-2">
                   <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center overflow-hidden bg-background">
-                    {storeLogo ? (
-                      <img src={storeLogo} alt={storeName} className="w-full h-full object-contain p-1" />
+                    {settings?.logo ? (
+                      <img src={settings.logo} alt="Logo" className="w-full h-full object-contain p-1" />
                     ) : (
-                      <span className="text-primary font-bold text-sm">{storeName.charAt(0)}</span>
+                      <Leaf className="h-5 w-5 text-primary" />
                     )}
                   </div>
                   <div>
-                    <p className="font-bold text-primary">{storeName}</p>
-                    <p className="text-xs text-muted-foreground">{settings?.tagline || "অ্যাডমিন প্যানেল"}</p>
+                    <p className="font-bold text-primary">{settings?.store_name || "αªàαºìαª»αª╛αªíαª«αª┐αª¿ αª¬αºìαª»αª╛αª¿αºçαª▓"}</p>
+                    <p className="text-xs text-muted-foreground">{settings?.tagline || "αªàαª░αºìαªùαª╛αª¿αª┐αªò αª╕αºìαªƒαºïαª░"}</p>
                   </div>
                 </Link>
                 <button
@@ -281,28 +276,22 @@ const AdminLayout = () => {
 
             {/* Footer */}
             <div className="p-4 border-t border-border space-y-2">
-              <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
-                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
-                  {user?.email?.charAt(0)?.toUpperCase()}
-                </div>
-                <span className="truncate text-xs font-medium">{user?.email?.split("@")[0]}</span>
-              </div>
-              <Link to="/" target="_blank">
-                <Button variant="outline" className="w-full justify-start gap-2 text-sm">
-                  <ExternalLink className="h-4 w-4" />
-                  স্টোর দেখুন
+              <Link to="/">
+                <Button variant="outline" className="w-full justify-start gap-2">
+                  <ChevronRight className="h-4 w-4 rotate-180" />
+                  αª╕αºìαªƒαºïαª░αºç αª½αª┐αª░αºç αª»αª╛αª¿
                 </Button>
               </Link>
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-2 text-destructive hover:text-destructive text-sm"
+                className="w-full justify-start gap-2 text-destructive hover:text-destructive"
                 onClick={() => {
                   signOut();
                   navigate("/");
                 }}
               >
                 <LogOut className="h-4 w-4" />
-                লগআউট
+                αª▓αªùαªåαªëαªƒ
               </Button>
             </div>
           </div>

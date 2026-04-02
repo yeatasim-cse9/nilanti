@@ -12,7 +12,8 @@ import {
   Settings,
   ChevronRight,
   ShieldCheck,
-  Smartphone
+  Smartphone,
+  Map
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,7 @@ const AdminSettings = () => {
     youtube: "",
     working_hours: "",
     logo: "",
+    map_embed_url: "",
   });
 
   useEffect(() => {
@@ -60,6 +62,7 @@ const AdminSettings = () => {
         youtube: settings.youtube || "",
         working_hours: settings.working_hours || "",
         logo: settings.logo || "",
+        map_embed_url: settings.map_embed_url || "",
       });
     }
   }, [settings]);
@@ -285,6 +288,58 @@ const AdminSettings = () => {
                 <p className="text-xs font-black uppercase text-orange-900 tracking-tight">সাপোর্ট লেশেন্স</p>
                 <p className="text-[10px] font-bold text-orange-900/40 uppercase tracking-widest">Always online for queries</p>
              </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: "map-location",
+      title: "ম্যাপ লোকেশন",
+      description: "Google Maps embed for Contact page",
+      icon: Map,
+      color: "text-rose-600",
+      bg: "bg-rose-500/10",
+      content: (
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="map-url" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Google Maps Embed URL</Label>
+            <div className="relative group/field">
+              <div className="absolute left-4 top-4 h-4 w-4 text-rose-500/40 group-focus-within/field:text-rose-500 transition-colors">
+                <Map className="h-full w-full" />
+              </div>
+              <Textarea
+                id="map-url"
+                className="pl-11 min-h-[100px] bg-white/50 border-white/60 rounded-2xl font-bold shadow-sm focus-visible:ring-rose-500/20 resize-none text-xs"
+                value={form.map_embed_url}
+                onChange={(e) => setForm({ ...form, map_embed_url: e.target.value })}
+                placeholder="https://www.google.com/maps/embed?pb=..."
+              />
+            </div>
+          </div>
+          <div className="p-6 bg-rose-50/50 rounded-[2rem] border border-rose-100/50 space-y-3">
+            <p className="text-[10px] font-bold text-rose-900/60 leading-relaxed">
+              <span className="font-black uppercase tracking-widest">কিভাবে পাবেন:</span>
+            </p>
+            <ol className="text-[10px] text-rose-900/50 space-y-1.5 list-decimal list-inside leading-relaxed">
+              <li>Google Maps এ আপনার লোকেশন সার্চ করুন</li>
+              <li>"Share" বাটনে ক্লিক করুন → "Embed a map" ট্যাব নির্বাচন করুন</li>
+              <li>"COPY HTML" এ ক্লিক করুন</li>
+              <li>কপি করা কোড থেকে শুধু <code className="bg-rose-100 px-1 py-0.5 rounded font-mono">src="..."</code> এর ভেতরের URL টি এখানে পেস্ট করুন</li>
+            </ol>
+            {form.map_embed_url && (
+              <div className="mt-4 rounded-2xl overflow-hidden border border-rose-200/50 h-[180px]">
+                <iframe
+                  src={form.map_embed_url}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  title="Map Preview"
+                  className="grayscale-[20%]"
+                />
+              </div>
+            )}
           </div>
         </div>
       )
