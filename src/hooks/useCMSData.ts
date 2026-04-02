@@ -12,11 +12,10 @@ import {
   where, 
   orderBy, 
   limit,
-  onSnapshot,
-  writeBatch
+  writeBatch,
+  setDoc
 } from "firebase/firestore";
 import { toast } from "sonner";
-import { useEffect } from "react";
 
 // Blog Posts
 export const useBlogPosts = (publishedOnly = false) => {
@@ -163,7 +162,7 @@ export const useUpdatePageContent = () => {
   });
 };
 
-// Homepage Sections
+// Homepage Sections — single fetch, all sections at once, cached aggressively
 export const useHomepageSections = () => {
   return useQuery({
     queryKey: ["homepage-sections"],
@@ -171,41 +170,23 @@ export const useHomepageSections = () => {
       const querySnapshot = await getDocs(collection(db, "homepage_sections"));
       return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 };
 
+// Derive individual section from the already-fetched sections list (no extra Firestore call!)
 export const useHomepageSection = (sectionId: string) => {
-  const queryClient = useQueryClient();
-  const queryKey = ["homepage-section", sectionId];
+  const { data: allSections, isLoading } = useHomepageSections();
 
-  useEffect(() => {
-    if (!sectionId) return;
-    const docRef = doc(db, "homepage_sections", sectionId);
-    const unsubscribe = onSnapshot(docRef, (docSnap) => {
-      if (docSnap.exists()) {
-        queryClient.setQueryData(queryKey, { id: docSnap.id, ...docSnap.data() });
-      } else {
-        queryClient.setQueryData(queryKey, null);
-      }
-    });
-    return () => unsubscribe();
-  }, [sectionId, queryClient]);
+  const section = allSections 
+    ? (allSections as any[]).find(s => s.id === sectionId) || null
+    : undefined;
 
-  return useQuery({
-    queryKey,
-    queryFn: async () => {
-      if (!sectionId) return null;
-      const docRef = doc(db, "homepage_sections", sectionId);
-      const docSnap = await getDoc(docRef);
-      if (!docSnap.exists()) return null;
-      return { id: docSnap.id, ...docSnap.data() };
-    },
-    enabled: !!sectionId,
-    staleTime: Infinity,
-  });
+  return {
+    data: isLoading ? undefined : section,
+    isLoading,
+  };
 };
-
-import { setDoc } from "firebase/firestore";
 
 export const useUpdateHomepageSection = () => {
   const queryClient = useQueryClient();
@@ -216,7 +197,6 @@ export const useUpdateHomepageSection = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["homepage-sections"] });
-      queryClient.invalidateQueries({ queryKey: ["homepage-section"] });
       toast.success("সেকশন আপডেট হয়েছে");
     },
     onError: () => toast.error("আপডেট করা যায়নি"),
@@ -253,25 +233,10 @@ export const useDeleteHomepageSection = () => {
   });
 };
 
-// Testimonials
+// Testimonials — simple getDocs, no real-time listener for homepage
 export const useTestimonials = (activeOnly = false) => {
-  const queryClient = useQueryClient();
-  const queryKey = ["testimonials", activeOnly];
-
-  useEffect(() => {
-    let q = query(collection(db, "testimonials"), orderBy("sort_order", "asc"));
-    if (activeOnly) {
-      q = query(q, where("is_active", "==", true));
-    }
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      queryClient.setQueryData(queryKey, data);
-    });
-    return () => unsubscribe();
-  }, [activeOnly, queryClient]);
-
   return useQuery({
-    queryKey,
+    queryKey: ["testimonials", activeOnly],
     queryFn: async () => {
       let q = query(collection(db, "testimonials"), orderBy("sort_order", "asc"));
       
@@ -282,7 +247,7 @@ export const useTestimonials = (activeOnly = false) => {
       const querySnapshot = await getDocs(q);
       return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     },
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 };
 
@@ -349,5 +314,3 @@ export const useUpdateHomepageOrder = () => {
     onError: () => toast.error("অর্ডার আপডেট করা যায়নি"),
   });
 };
-
-

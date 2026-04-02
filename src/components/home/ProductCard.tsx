@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Star, Eye } from "lucide-react";
+import { ShoppingCart, Star, Eye, ImageOff, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -44,6 +44,7 @@ const ProductCard = ({
   const { addItem } = useCart();
   const { toast } = useToast();
   const [showQuickView, setShowQuickView] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const hasDiscount = sale_price && sale_price < base_price;
   const discountPercentage = hasDiscount
@@ -51,29 +52,26 @@ const ProductCard = ({
     : 0;
   const isOutOfStock = stock_quantity <= 0;
   const isLowStock = stock_quantity > 0 && stock_quantity <= 10;
+  const showImage = image_url && !imgError;
 
-  const formatPrice = (price: number) => {
-    return `৳${price.toLocaleString("bn-BD")}`;
-  };
+  const formatPrice = (price: number) => `৳${price.toLocaleString("bn-BD")}`;
 
   const handleAddToCart = (e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-
     if (isOutOfStock) return;
 
     addItem({
       productId: id,
       name_bn: name_bn,
-      image_url: image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=300&fit=crop",
+      image_url: image_url || "",
       price: sale_price || base_price,
       quantity: 1,
       stock_quantity: stock_quantity,
     });
 
-    // Track AddToCart event
     trackAddToCart({
       content_name: name_bn,
       content_ids: [id],
@@ -83,189 +81,194 @@ const ProductCard = ({
     });
 
     toast({
-      title: "কার্টে যোগ হয়েছে",
+      title: "কার্টে যোগ হয়েছে",
       description: name_bn,
     });
 
-    if (showQuickView) {
-      setShowQuickView(false);
-    }
+    if (showQuickView) setShowQuickView(false);
     navigate("/cart");
   };
 
+  const ImagePlaceholder = ({ className = "" }: { className?: string }) => (
+    <div className={`w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center justify-center gap-2 ${className}`}>
+      <ImageOff className="w-7 h-7 text-gray-200" />
+      <span className="text-[10px] text-gray-300 font-medium">ছবি নেই</span>
+    </div>
+  );
+
   return (
     <>
-      <div className="group flex flex-col h-full bg-transparent transition-all duration-500 relative">
-        {/* Image */}
-        <div className="relative aspect-square overflow-hidden bg-muted/20 group/image">
+      <div className="group flex flex-col h-full bg-white rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.12)] hover:-translate-y-1 border border-gray-100/80">
+        {/* Image Container */}
+        <div className="relative aspect-[3/4] overflow-hidden bg-gray-50">
           <Link to={`/product/${slug}`} className="block w-full h-full">
-            <img
-              src={image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=300&fit=crop"}
-              alt={name_bn}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-              loading="lazy"
-            />
+            {showImage ? (
+              <img
+                src={image_url}
+                alt={name_bn}
+                className="w-full h-full object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.06]"
+                loading="lazy"
+                onError={() => setImgError(true)}
+              />
+            ) : (
+              <ImagePlaceholder />
+            )}
           </Link>
 
-          {/* Quick View Button Overlay */}
-          <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full opacity-0 group-hover/image:translate-y-0 group-hover/image:opacity-100 transition-all duration-300 z-10 flex justify-center bg-gradient-to-t from-black/60 via-black/30 to-transparent">
-            <Button
-              onClick={(e) => {
-                e.preventDefault();
-                setShowQuickView(true);
-              }}
-              className="w-full max-w-[200px] gap-2 bg-white hover:bg-blue-600 hover:text-white text-gray-900 transition-all duration-300 rounded-none text-[11px] font-bold h-10 tracking-normal font-bengali"
-            >
-              <Eye className="w-4 h-4" /> কুইক ভিউ
-            </Button>
-          </div>
+          {/* Hover Actions — desktop only */}
+          {showImage && (
+            <div className="hidden md:flex absolute inset-x-0 bottom-0 p-3 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-400 ease-out z-10 justify-center bg-gradient-to-t from-black/40 via-black/20 to-transparent pt-10">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowQuickView(true);
+                }}
+                className="w-full max-w-[160px] gap-1.5 bg-white/95 hover:bg-white text-gray-900 rounded-xl text-[11px] font-semibold h-9 shadow-lg backdrop-blur-sm"
+              >
+                <Eye className="w-3.5 h-3.5" /> কুইক ভিউ
+              </Button>
+            </div>
+          )}
 
-          {/* Badges */}
-          <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10 pointer-events-none">
+          {/* Badges — top-left stack */}
+          <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10 pointer-events-none">
             {hasDiscount && (
-              <span className="bg-blue-600 text-white text-[11px] font-black px-2.5 py-1 uppercase tracking-normal shadow-sm font-bengali">
-                {discountPercentage.toLocaleString('bn-BD')}% ছাড়
+              <span className="inline-flex items-center justify-center bg-gray-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm tracking-wide">
+                -{discountPercentage}%
               </span>
             )}
             {is_featured && !hasDiscount && (
-              <span className="bg-black text-white text-[11px] font-black px-2.5 py-1 uppercase tracking-normal shadow-sm font-bengali">
-                সেরা পণ্য
+              <span className="inline-flex items-center justify-center bg-amber-400 text-gray-900 text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm">
+                ⭐ সেরা
               </span>
             )}
           </div>
 
           {/* Out of Stock Overlay */}
           {isOutOfStock && (
-            <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] flex items-center justify-center z-10 pointer-events-none">
-              <span className="text-black font-black text-xs px-4 py-2 bg-white tracking-normal uppercase shadow-sm font-bengali">স্টক শেষ</span>
+            <div className="absolute inset-0 bg-white/70 backdrop-blur-[3px] flex items-center justify-center z-10 pointer-events-none">
+              <span className="text-gray-700 font-bold text-xs px-4 py-2 bg-white rounded-xl shadow-sm border border-gray-100">
+                স্টক শেষ
+              </span>
             </div>
           )}
         </div>
 
         {/* Content */}
-        <div className="pt-4 pb-2 flex flex-col flex-grow bg-transparent relative">
-          <div className="flex-grow">
-            <div className="flex justify-between items-start gap-3 mb-1.5">
-              <div className="text-blue-600 font-black uppercase text-[11px] md:text-xs tracking-normal mt-0.5 line-clamp-1 truncate pe-4">
-                {name_bn.split(' ')[0]}
-              </div>
-
-              <div className="flex flex-col items-end leading-none text-right flex-shrink-0 gap-1.5">
-                {hasDiscount && (
-                  <span className="text-[11px] font-bold text-muted-foreground line-through decoration-muted-foreground/40">
-                    {formatPrice(base_price)}
-                  </span>
-                )}
-                <span className="text-[16px] md:text-[18px] font-black text-black tracking-tight">
-                  {formatPrice(sale_price || base_price)}
-                </span>
-              </div>
-            </div>
-
+        <div className="p-3.5 md:p-4 flex flex-col flex-grow">
+          <div className="flex-grow space-y-1.5">
             {/* Name */}
-            <Link to={`/product/${slug}`} className="block mt-1">
-              <h3 className="font-bold text-gray-900 text-[14px] md:text-[16px] leading-snug group-hover:text-blue-600 transition-colors duration-300 pr-12">
+            <Link to={`/product/${slug}`} className="block">
+              <h3 className="font-semibold text-gray-800 text-[13px] md:text-sm leading-snug group-hover:text-gray-950 transition-colors line-clamp-2">
                 {name_bn}
               </h3>
             </Link>
 
             {/* Rating */}
             {rating > 0 && (
-              <div className="flex items-center gap-1 mt-2.5 opacity-80">
-                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                <span className="text-xs font-bold text-gray-900 font-bengali">
-                  {rating.toLocaleString('bn-BD', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+              <div className="flex items-center gap-1">
+                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                <span className="text-[11px] font-semibold text-gray-600">
+                  {rating.toFixed(1)}
                 </span>
-                <span className="text-xs text-muted-foreground font-bengali">({reviews_count.toLocaleString('bn-BD')})</span>
+                <span className="text-[11px] text-gray-300">({reviews_count})</span>
               </div>
             )}
 
-            {/* Stock Alert */}
-            {isLowStock && (
-              <p className="text-[10px] md:text-xs font-bold text-destructive mt-3 inline-flex items-center gap-1.5 uppercase tracking-normal">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
+            {/* Price */}
+            <div className="flex items-baseline gap-2 pt-0.5">
+              <span className="text-[15px] md:text-base font-bold text-gray-900 tracking-tight">
+                {formatPrice(sale_price || base_price)}
+              </span>
+              {hasDiscount && (
+                <span className="text-[11px] text-gray-300 line-through">
+                  {formatPrice(base_price)}
                 </span>
-                মাত্র {stock_quantity.toLocaleString('bn-BD')}টি বাকি!
+              )}
+            </div>
+
+            {/* Low Stock Alert */}
+            {isLowStock && (
+              <p className="text-[10px] font-semibold text-orange-500 flex items-center gap-1 pt-0.5">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500" />
+                </span>
+                মাত্র {stock_quantity}টি বাকি
               </p>
             )}
           </div>
 
-          {/* Add to Cart button on hover */}
-          <div className="absolute bottom-2 right-0 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 pointer-events-none group-hover:pointer-events-auto">
-             <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-none bg-blue-500/10 hover:bg-blue-500 text-blue-500 hover:text-white h-9 w-9"
-                disabled={isOutOfStock}
-                onClick={handleAddToCart}
-             >
-                <ShoppingCart className="h-4 w-4" />
-             </Button>
-          </div>
+          {/* Add to Cart — 44px min touch target */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full mt-3 h-10 md:h-9 text-xs rounded-xl gap-1.5 border-gray-150 bg-gray-50/50 hover:bg-gray-900 hover:text-white hover:border-gray-900 active:scale-[0.98] transition-all duration-300"
+            disabled={isOutOfStock}
+            onClick={handleAddToCart}
+          >
+            <ShoppingCart className="h-3.5 w-3.5" />
+            {isOutOfStock ? "স্টক নেই" : "কার্টে যোগ করুন"}
+          </Button>
         </div>
       </div>
 
       {/* Quick View Dialog */}
       <Dialog open={showQuickView} onOpenChange={setShowQuickView}>
-        <DialogContent className="max-w-3xl p-0 overflow-hidden border-none shadow-2xl bg-card rounded-2xl w-[95vw] md:w-full">
+        <DialogContent className="max-w-3xl p-0 overflow-hidden border-none shadow-2xl bg-white rounded-2xl w-[95vw] md:w-full">
           <div className="grid grid-cols-1 md:grid-cols-2">
-            <div className="aspect-square bg-muted/30">
-              <img
-                src={image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=300&fit=crop"}
-                alt={name_bn}
-                className="w-full h-full object-cover"
-              />
+            <div className="aspect-square bg-gray-50">
+              {showImage ? (
+                <img src={image_url} alt={name_bn} className="w-full h-full object-cover" />
+              ) : (
+                <ImagePlaceholder />
+              )}
             </div>
-            <div className="p-6 md:p-8 flex flex-col justify-between">
+            <div className="p-5 md:p-8 flex flex-col justify-between">
               <div className="space-y-4">
                 <DialogHeader className="text-left">
-                  <DialogTitle className="text-2xl md:text-3xl font-bold leading-tight text-foreground">
+                  <DialogTitle className="text-xl md:text-2xl font-extrabold leading-tight text-gray-900">
                     {name_bn}
                   </DialogTitle>
                 </DialogHeader>
 
                 {rating > 0 && (
-                  <div className="flex items-center gap-1.5 opacity-90">
+                  <div className="flex items-center gap-1.5">
                     <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                    <span className="text-sm font-semibold font-bengali">
-                      {rating.toLocaleString('bn-BD', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
-                    </span>
-                    <span className="text-sm text-muted-foreground font-bengali">({reviews_count.toLocaleString('bn-BD')} রিভিউ)</span>
+                    <span className="text-sm font-semibold">{rating.toFixed(1)}</span>
+                    <span className="text-sm text-gray-400">({reviews_count} রিভিউ)</span>
                   </div>
                 )}
 
-                <div className="flex items-baseline gap-3 pt-2">
-                  <span className="text-3xl font-bold text-primary">
+                <div className="flex items-baseline gap-3 pt-1">
+                  <span className="text-2xl md:text-3xl font-bold text-gray-900">
                     {formatPrice(sale_price || base_price)}
                   </span>
                   {hasDiscount && (
-                    <span className="text-lg text-muted-foreground line-through">
+                    <span className="text-base text-gray-300 line-through">
                       {formatPrice(base_price)}
                     </span>
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {is_featured && <Badge variant="secondary">বিশেষ পণ্য</Badge>}
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {is_featured && <Badge variant="secondary" className="rounded-lg">বিশেষ পণ্য</Badge>}
                   {isOutOfStock ? (
-                    <Badge variant="destructive">স্টক শেষ</Badge>
+                    <Badge variant="destructive" className="rounded-lg">স্টক শেষ</Badge>
                   ) : (
-                    <Badge variant="outline" className="border-green-500/30 text-green-600 bg-green-500/10">ইন স্টক</Badge>
+                    <Badge variant="outline" className="border-emerald-200 text-emerald-600 bg-emerald-50 rounded-lg">ইন স্টক</Badge>
                   )}
                   {isLowStock && (
-                    <Badge variant="destructive" className="bg-blue-500/10 text-blue-600 border-none hover:bg-blue-500/20 font-bengali">
-                      সীমিত স্টক ({stock_quantity.toLocaleString('bn-BD')} টি)
+                    <Badge variant="outline" className="border-amber-200 text-amber-600 bg-amber-50 rounded-lg">
+                      সীমিত স্টক ({stock_quantity} টি)
                     </Badge>
                   )}
                 </div>
               </div>
 
-              <div className="space-y-3 mt-8 pt-6 border-t border-border">
+              <div className="space-y-2.5 mt-6 pt-5 border-t border-gray-100">
                 <Button
-                  className="w-full text-base h-12 shadow-sm"
-                  size="lg"
+                  className="w-full h-12 rounded-xl text-sm font-semibold bg-gray-900 hover:bg-gray-800"
                   onClick={() => handleAddToCart()}
                   disabled={isOutOfStock}
                 >
@@ -273,8 +276,7 @@ const ProductCard = ({
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full text-base h-12"
-                  size="lg"
+                  className="w-full h-12 rounded-xl text-sm border-gray-200"
                   onClick={() => {
                     setShowQuickView(false);
                     navigate(`/product/${slug}`);

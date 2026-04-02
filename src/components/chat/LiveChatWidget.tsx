@@ -62,9 +62,9 @@ const LiveChatWidget = () => {
     }
   }, []);
 
-  // Subscribe to new messages
+  // Subscribe to new messages — only when widget is open AND chat started
   useEffect(() => {
-    if (!sessionId || !isStarted) return;
+    if (!sessionId || !isStarted || !isOpen) return;
 
     const q = query(
       collection(db, `chat_sessions/${sessionId}/messages`),
@@ -79,7 +79,7 @@ const LiveChatWidget = () => {
     });
 
     return () => unsubscribe();
-  }, [sessionId, isStarted]);
+  }, [sessionId, isStarted, isOpen]);
 
   // Scroll to bottom on new messages
   useEffect(() => {

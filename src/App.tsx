@@ -50,7 +50,16 @@ import AdminIntegrations from "./pages/admin/Integrations";
 import LiveChatWidget from "./components/chat/LiveChatWidget";
 import MetaPixel from "./components/MetaPixel";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes — data is considered fresh
+      gcTime: 10 * 60 * 1000, // 10 minutes — keep inactive data in cache
+      refetchOnWindowFocus: false, // Don't refetch when tab regains focus
+      retry: 1, // Only retry once on failure
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

@@ -1,38 +1,18 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ProductCard from "./ProductCard";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, limit, onSnapshot } from "firebase/firestore";
+import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHomepageSection } from "@/hooks/useCMSData";
 
 const FeaturedProducts = () => {
-  const queryClient = useQueryClient();
   const { data: section } = useHomepageSection("featured_products");
 
-  const queryKey = ['featured-products'];
-
-  useEffect(() => {
-    const q = query(
-      collection(db, "products"),
-      where("is_active", "==", true),
-      where("is_featured", "==", true),
-      limit(4)
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      queryClient.setQueryData(queryKey, data);
-    });
-
-    return () => unsubscribe();
-  }, [queryClient]);
-
   const { data: products = [], isLoading } = useQuery({
-    queryKey,
+    queryKey: ['featured-products'],
     queryFn: async () => {
       const q = query(
         collection(db, "products"),
@@ -40,11 +20,10 @@ const FeaturedProducts = () => {
         where("is_featured", "==", true),
         limit(4)
       );
-
       const querySnapshot = await getDocs(q);
       return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
     },
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000,
   });
 
   const handleAddToCart = (productId: string) => {
@@ -53,20 +32,20 @@ const FeaturedProducts = () => {
 
   if (isLoading && products.length === 0) {
     return (
-      <section className="py-10 md:py-14">
+      <section className="py-12 md:py-20">
         <div className="container">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-10">
             <div>
-              <Skeleton className="h-8 w-48" />
-              <Skeleton className="h-4 w-64 mt-2" />
+              <Skeleton className="h-4 w-48 rounded-lg" />
+              <Skeleton className="h-8 w-64 mt-2 rounded-lg" />
             </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="space-y-3">
-                <Skeleton className="aspect-square rounded-lg" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="aspect-[3/4] rounded-2xl" />
+                <Skeleton className="h-4 w-3/4 rounded-lg" />
+                <Skeleton className="h-4 w-1/2 rounded-lg" />
               </div>
             ))}
           </div>
@@ -75,52 +54,54 @@ const FeaturedProducts = () => {
     );
   }
 
-  if (products.length === 0) {
-    return null;
-  }
+  if (products.length === 0) return null;
 
   return (
-    <section className="py-10 md:py-14">
+    <section className="py-12 md:py-20">
       <div className="container">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-2 h-10 md:h-12 bg-primary rounded-full"></div>
-            <div>
-              <p className="text-primary font-bold text-sm md:text-base tracking-normal uppercase mb-1">
-                {(section as any)?.subtitle_bn || "আমাদের সেরা মানের অর্গানিক পণ্যসমূহ দেখুন"}
-              </p>
-              <h2 className="text-3xl md:text-5xl font-black text-foreground tracking-tight">
-                {(section as any)?.title_bn || "বিশেষ আকর্ষণ"}
-              </h2>
-            </div>
+        {/* Section Header */}
+        <div className="flex items-end justify-between mb-8 md:mb-10 reveal">
+          <div className="space-y-1">
+            <p className="text-[11px] md:text-xs font-bold text-gray-400 uppercase tracking-[0.12em]">
+              {(section as any)?.subtitle_bn || "আমাদের সেরা কালেকশন"}
+            </p>
+            <h2 className="text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
+              {(section as any)?.title_bn || "বিশেষ আকর্ষণ"}
+            </h2>
           </div>
           <Link to="/shop?featured=true">
-            <Button variant="outline" className="hidden sm:flex items-center gap-2">
+            <Button
+              variant="ghost"
+              className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 h-9 rounded-lg transition-colors"
+            >
               সব দেখুন
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              id={product.id}
-              name_bn={product.name_bn}
-              slug={product.slug}
-              image_url={product.images?.[0] || ''}
-              base_price={product.base_price}
-              sale_price={product.sale_price}
-              stock_quantity={product.stock_quantity}
-              onAddToCart={() => handleAddToCart(product.id)}
-            />
+        {/* Product Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
+          {products.map((product: any, i: number) => (
+            <div key={product.id} className={`reveal stagger-${Math.min(i + 1, 4)}`}>
+              <ProductCard
+                id={product.id}
+                name_bn={product.name_bn}
+                slug={product.slug}
+                image_url={product.images?.[0] || ''}
+                base_price={product.base_price}
+                sale_price={product.sale_price}
+                stock_quantity={product.stock_quantity}
+                onAddToCart={() => handleAddToCart(product.id)}
+              />
+            </div>
           ))}
         </div>
 
-        <div className="mt-6 text-center sm:hidden">
+        {/* Mobile CTA */}
+        <div className="mt-6 text-center sm:hidden reveal">
           <Link to="/shop?featured=true">
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full h-11 rounded-xl text-sm border-gray-200">
               সব দেখুন
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>

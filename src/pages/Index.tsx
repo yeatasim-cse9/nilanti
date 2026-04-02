@@ -14,11 +14,12 @@ import InstagramFeed from "@/components/home/InstagramFeed";
 import AnnouncementBar from "@/components/home/AnnouncementBar";
 import Newsletter from "@/components/home/Newsletter";
 import { useHomepageSections } from "@/hooks/useCMSData";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const Index = () => {
-  const { data: sections, isLoading } = useHomepageSections();
+  const { data: sections } = useHomepageSections();
+  const containerRef = useScrollReveal();
 
-  // Mapping of section IDs to their corresponding components
   const renderSection = (id: string) => {
     switch (id.toLowerCase()) {
       case "hero_banner": return <HeroBanner />;
@@ -37,7 +38,6 @@ const Index = () => {
     }
   };
 
-  // Define the default order to maintain visual consistency
   const DEFAULT_ORDER = [
     "hero_banner",
     "categories_slider",
@@ -53,23 +53,9 @@ const Index = () => {
     "newsletter",
   ];
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header cartCount={0} />
-        <main className="flex-1 flex items-center justify-center bg-background">
-          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  // Get active sections and sort them by default order
-  // If a new section is added that is not in DEFAULT_ORDER, it will be added at the end
   const activeSections = (sections as any[])?.filter(s => s.is_active) || [];
-  
-  const sortedSectionIds = activeSections.length > 0 
+
+  const sortedSectionIds = activeSections.length > 0
     ? [...activeSections]
         .sort((a, b) => (a.order || 999) - (b.order || 999))
         .map(s => s.id)
@@ -78,16 +64,16 @@ const Index = () => {
   const isAnnouncementActive = (sections as any[])?.some(s => s.id.toLowerCase() === "announcement_bar" && s.is_active);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div ref={containerRef} className="min-h-screen flex flex-col bg-white">
       {isAnnouncementActive && <AnnouncementBar />}
-      
+
       <Header cartCount={0} />
 
       <main className="flex-1">
         {sortedSectionIds
-          .filter(id => id.toLowerCase() !== "announcement_bar") 
+          .filter(id => id.toLowerCase() !== "announcement_bar")
           .map(id => (
-            <div key={id} className="animate-in fade-in duration-500">
+            <div key={id}>
               {renderSection(id)}
             </div>
           ))

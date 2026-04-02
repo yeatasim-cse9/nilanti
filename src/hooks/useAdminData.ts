@@ -16,11 +16,9 @@ import {
   serverTimestamp,
   Timestamp,
   increment,
-  writeBatch,
-  onSnapshot
+  writeBatch
 } from "firebase/firestore";
 import { toast } from "sonner";
-import { useEffect } from "react";
 import { Product, Coupon } from "@/types/firestore";
 
 // Helper to convert Firestore timestamp to ISO string
@@ -541,6 +539,7 @@ export const useBanners = () => {
         ...doc.data()
       }));
     },
+    staleTime: 10 * 60 * 1000, // 10 minutes — banners rarely change
   });
 };
 
@@ -610,37 +609,10 @@ export const useCustomers = () => {
   });
 };
 
-// Site Settings — singleton snapshot listener
-let settingsListenerCount = 0;
-let settingsUnsubscribe: (() => void) | null = null;
-
+// Site Settings — simple getDocs, cached aggressively
 export const useSiteSettings = () => {
-  const queryClient = useQueryClient();
-  const queryKey = ["site-settings"];
-
-  useEffect(() => {
-    settingsListenerCount++;
-    if (settingsListenerCount === 1) {
-      const q = collection(db, "site_settings");
-      settingsUnsubscribe = onSnapshot(q, (snapshot) => {
-        const settings = snapshot.docs.reduce((acc: any, d) => {
-          acc[d.id] = d.data().value;
-          return acc;
-        }, {});
-        queryClient.setQueryData(queryKey, settings);
-      });
-    }
-    return () => {
-      settingsListenerCount--;
-      if (settingsListenerCount === 0 && settingsUnsubscribe) {
-        settingsUnsubscribe();
-        settingsUnsubscribe = null;
-      }
-    };
-  }, [queryClient]);
-
   return useQuery({
-    queryKey,
+    queryKey: ["site-settings"],
     queryFn: async () => {
       const q = collection(db, "site_settings");
       const querySnapshot = await getDocs(q);
@@ -649,7 +621,7 @@ export const useSiteSettings = () => {
         return acc;
       }, {});
     },
-    staleTime: Infinity,
+    staleTime: 10 * 60 * 1000, // 10 minutes — settings rarely change
   });
 };
 
