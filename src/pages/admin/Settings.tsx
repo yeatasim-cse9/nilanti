@@ -10,7 +10,6 @@ import {
   Mail, 
   Globe,
   Settings,
-  ChevronRight,
   ShieldCheck,
   Smartphone,
   Map
@@ -77,14 +76,11 @@ const AdminSettings = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-10 animate-in fade-in duration-500">
-        <div className="space-y-2">
-          <Skeleton className="h-10 w-64 rounded-xl" />
-          <Skeleton className="h-5 w-48 rounded-lg" />
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="space-y-6 max-w-[1400px] mx-auto pb-20">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-[400px] w-full rounded-[2.5rem]" />
+            <Skeleton key={i} className="h-[350px] w-full rounded-xl" />
           ))}
         </div>
       </div>
@@ -98,60 +94,55 @@ const AdminSettings = () => {
       description: "Basic branding and contact details",
       icon: Store,
       color: "text-blue-600",
-      bg: "bg-blue-500/10",
+      bg: "bg-blue-50",
+      borderColor: "border-blue-200",
       content: (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="space-y-2 group">
-              <Label htmlFor="store-name" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">স্টোরের নাম</Label>
-              <div className="relative group/field">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500/40 group-focus-within/field:text-blue-500 transition-colors">
-                  <Store className="h-full w-full" />
-                </div>
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="store-name" className="text-xs font-medium text-muted-foreground">স্টোরের নাম</Label>
+              <div className="relative">
+                <Store className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="store-name"
-                  className="pl-11 h-14 bg-white/50 border-white/60 rounded-2xl font-bold shadow-sm focus-visible:ring-blue-500/20"
+                  className="pl-10 h-10"
                   value={form.store_name}
                   onChange={(e) => setForm({ ...form, store_name: e.target.value })}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tagline" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">ট্যাগলাইন</Label>
+              <Label htmlFor="tagline" className="text-xs font-medium text-muted-foreground">ট্যাগলাইন</Label>
               <Input
                 id="tagline"
-                className="h-14 bg-white/50 border-white/60 rounded-2xl font-bold shadow-sm focus-visible:ring-blue-500/20"
+                className="h-10"
                 value={form.tagline}
                 onChange={(e) => setForm({ ...form, tagline: e.target.value })}
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="phone" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">ফোন নম্বর</Label>
-              <div className="relative group/field">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500/40 group-focus-within/field:text-blue-500 transition-colors">
-                  <Phone className="h-full w-full" />
-                </div>
+              <Label htmlFor="phone" className="text-xs font-medium text-muted-foreground">ফোন নম্বর</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="phone"
-                  className="pl-11 h-14 bg-white/50 border-white/60 rounded-2xl font-bold shadow-sm focus-visible:ring-blue-500/20"
+                  className="pl-10 h-10"
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">ইমেইল</Label>
-              <div className="relative group/field">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500/40 group-focus-within/field:text-blue-500 transition-colors">
-                  <Mail className="h-full w-full" />
-                </div>
+              <Label htmlFor="email" className="text-xs font-medium text-muted-foreground">ইমেইল</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
-                  className="pl-11 h-14 bg-white/50 border-white/60 rounded-2xl font-bold shadow-sm focus-visible:ring-blue-500/20"
+                  className="pl-10 h-10"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
@@ -160,34 +151,30 @@ const AdminSettings = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">ঠিকানা</Label>
-            <div className="relative group/field">
-              <div className="absolute left-4 top-4 h-4 w-4 text-blue-500/40 group-focus-within/field:text-blue-500 transition-colors">
-                <MapPin className="h-full w-full" />
-              </div>
+            <Label htmlFor="address" className="text-xs font-medium text-muted-foreground">ঠিকানা</Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Textarea
                 id="address"
-                className="pl-11 min-h-[100px] bg-white/50 border-white/60 rounded-2xl font-bold shadow-sm focus-visible:ring-blue-500/20 resize-none"
+                className="pl-10 min-h-[80px] resize-none"
                 value={form.address}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}
               />
             </div>
           </div>
 
-          <div className="space-y-4 pt-4 border-t border-muted/30">
-            <div className="flex items-center gap-3">
-               <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                  <Smartphone className="h-4 w-4 text-blue-600" />
-               </div>
-               <Label className="text-xs font-black uppercase tracking-tight">স্টোর লোগো</Label>
+          <div className="space-y-3 pt-4 border-t">
+            <div className="flex items-center gap-2">
+              <Smartphone className="h-4 w-4 text-muted-foreground" />
+              <Label className="text-xs font-medium">স্টোর লোগো</Label>
             </div>
-            <div className="p-6 bg-slate-50/50 rounded-[2rem] border border-dashed border-muted">
+            <div className="p-4 bg-muted/30 rounded-xl border border-dashed">
               <ImageUpload 
                 images={form.logo ? [form.logo] : []} 
                 onChange={(urls) => setForm({ ...form, logo: urls[0] || "" })}
                 multiple={false}
               />
-              <p className="text-[10px] font-bold text-muted-foreground mt-4 text-center uppercase tracking-widest opacity-60">P.S. Use a high-quality PNG with transparent background</p>
+              <p className="text-[10px] text-muted-foreground mt-3 text-center">PNG with transparent background recommended</p>
             </div>
           </div>
         </div>
@@ -199,19 +186,18 @@ const AdminSettings = () => {
       description: "App-wide promotional messages",
       icon: Bell,
       color: "text-purple-600",
-      bg: "bg-purple-500/10",
+      bg: "bg-purple-50",
+      borderColor: "border-purple-200",
       content: (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {[1, 2, 3].map((num) => (
             <div key={num} className="space-y-2">
-              <Label htmlFor={`notification-${num}`} className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">বার্তা {num}</Label>
-              <div className="relative group/field">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-purple-500/40 group-focus-within/field:text-purple-500 transition-colors">
-                  <Bell className="h-full w-full" />
-                </div>
+              <Label htmlFor={`notification-${num}`} className="text-xs font-medium text-muted-foreground">বার্তা {num}</Label>
+              <div className="relative">
+                <Bell className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id={`notification-${num}`}
-                  className="pl-11 h-14 bg-white/50 border-white/60 rounded-2xl font-bold shadow-sm focus-visible:ring-purple-500/20 placeholder:text-muted-foreground/30"
+                  className="pl-10 h-10"
                   placeholder="অফার বা গুরুত্বপূর্ণ ঘোষণা লিখুন..."
                   value={(form as any)[`notification_${num}`]}
                   onChange={(e) => setForm({ ...form, [`notification_${num}`]: e.target.value })}
@@ -219,10 +205,10 @@ const AdminSettings = () => {
               </div>
             </div>
           ))}
-          <div className="p-6 bg-purple-50/50 rounded-[2rem] border border-purple-100/50">
-             <p className="text-[10px] font-medium text-purple-900/60 leading-relaxed italic">
-               * এই বার্র্তাগুলো আপনার ওয়েবসাইটের সবথেকে উপরের টপ বারে স্লাইডার আকারে প্রদর্শিত হবে।
-             </p>
+          <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
+            <p className="text-xs text-purple-700 leading-relaxed">
+              * এই বার্তাগুলো আপনার ওয়েবসাইটের সবথেকে উপরের টপ বারে স্লাইডার আকারে প্রদর্শিত হবে।
+            </p>
           </div>
         </div>
       )
@@ -233,25 +219,24 @@ const AdminSettings = () => {
       description: "Connect your store social profiles",
       icon: Share2,
       color: "text-emerald-600",
-      bg: "bg-emerald-500/10",
+      bg: "bg-emerald-50",
+      borderColor: "border-emerald-200",
       content: (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {["facebook", "instagram", "youtube"].map((platform) => (
-             <div key={platform} className="space-y-2">
-                <Label htmlFor={platform} className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1 capitalize">{platform}</Label>
-                <div className="relative group/field">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500/40 group-focus-within/field:text-emerald-500 transition-colors">
-                    <Globe className="h-full w-full" />
-                  </div>
-                  <Input
-                    id={platform}
-                    className="pl-11 h-14 bg-white/50 border-white/60 rounded-2xl font-bold shadow-sm focus-visible:ring-emerald-500/20"
-                    value={(form as any)[platform]}
-                    onChange={(e) => setForm({ ...form, [platform]: e.target.value })}
-                    placeholder={`https://${platform}.com/yourstore`}
-                  />
-                </div>
-             </div>
+            <div key={platform} className="space-y-2">
+              <Label htmlFor={platform} className="text-xs font-medium text-muted-foreground capitalize">{platform}</Label>
+              <div className="relative">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id={platform}
+                  className="pl-10 h-10"
+                  value={(form as any)[platform]}
+                  onChange={(e) => setForm({ ...form, [platform]: e.target.value })}
+                  placeholder={`https://${platform}.com/yourstore`}
+                />
+              </div>
+            </div>
           ))}
         </div>
       )
@@ -262,32 +247,31 @@ const AdminSettings = () => {
       description: "Customer service operating hours",
       icon: Clock,
       color: "text-orange-600",
-      bg: "bg-orange-500/10",
+      bg: "bg-orange-50",
+      borderColor: "border-orange-200",
       content: (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="hours" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">সার্ভিস টাইম</Label>
-            <div className="relative group/field">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-500/40 group-focus-within/field:text-orange-500 transition-colors">
-                <Clock className="h-full w-full" />
-              </div>
+            <Label htmlFor="hours" className="text-xs font-medium text-muted-foreground">সার্ভিস টাইম</Label>
+            <div className="relative">
+              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="hours"
-                className="pl-11 h-14 bg-white/50 border-white/60 rounded-2xl font-bold shadow-sm focus-visible:ring-orange-500/20"
+                className="pl-10 h-10"
                 value={form.working_hours}
                 onChange={(e) => setForm({ ...form, working_hours: e.target.value })}
                 placeholder="প্রতিদিন সকাল ৯টা - রাত ১০টা"
               />
             </div>
           </div>
-          <div className="flex items-center gap-4 p-6 bg-orange-50/50 rounded-[2rem] border border-orange-100/50">
-             <div className="w-12 h-12 rounded-2xl bg-white border border-orange-200 flex items-center justify-center shadow-sm">
-                <ShieldCheck className="h-6 w-6 text-orange-500" />
-             </div>
-             <div>
-                <p className="text-xs font-black uppercase text-orange-900 tracking-tight">সাপোর্ট লেশেন্স</p>
-                <p className="text-[10px] font-bold text-orange-900/40 uppercase tracking-widest">Always online for queries</p>
-             </div>
+          <div className="flex items-center gap-3 p-4 bg-orange-50 rounded-xl border border-orange-100">
+            <div className="p-2 rounded-lg bg-white border border-orange-200">
+              <ShieldCheck className="h-5 w-5 text-orange-500" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-orange-800">সাপোর্ট সেশন</p>
+              <p className="text-xs text-orange-600">Always online for queries</p>
+            </div>
           </div>
         </div>
       )
@@ -298,36 +282,33 @@ const AdminSettings = () => {
       description: "Google Maps embed for Contact page",
       icon: Map,
       color: "text-rose-600",
-      bg: "bg-rose-500/10",
+      bg: "bg-rose-50",
+      borderColor: "border-rose-200",
       content: (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="map-url" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Google Maps Embed URL</Label>
-            <div className="relative group/field">
-              <div className="absolute left-4 top-4 h-4 w-4 text-rose-500/40 group-focus-within/field:text-rose-500 transition-colors">
-                <Map className="h-full w-full" />
-              </div>
+            <Label htmlFor="map-url" className="text-xs font-medium text-muted-foreground">Google Maps Embed URL</Label>
+            <div className="relative">
+              <Map className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Textarea
                 id="map-url"
-                className="pl-11 min-h-[100px] bg-white/50 border-white/60 rounded-2xl font-bold shadow-sm focus-visible:ring-rose-500/20 resize-none text-xs"
+                className="pl-10 min-h-[80px] resize-none text-xs"
                 value={form.map_embed_url}
                 onChange={(e) => setForm({ ...form, map_embed_url: e.target.value })}
                 placeholder="https://www.google.com/maps/embed?pb=..."
               />
             </div>
           </div>
-          <div className="p-6 bg-rose-50/50 rounded-[2rem] border border-rose-100/50 space-y-3">
-            <p className="text-[10px] font-bold text-rose-900/60 leading-relaxed">
-              <span className="font-black uppercase tracking-widest">কিভাবে পাবেন:</span>
-            </p>
-            <ol className="text-[10px] text-rose-900/50 space-y-1.5 list-decimal list-inside leading-relaxed">
+          <div className="p-4 bg-rose-50 rounded-xl border border-rose-100 space-y-2">
+            <p className="text-xs font-semibold text-rose-800">কিভাবে পাবেন:</p>
+            <ol className="text-xs text-rose-700 space-y-1 list-decimal list-inside leading-relaxed">
               <li>Google Maps এ আপনার লোকেশন সার্চ করুন</li>
-              <li>"Share" বাটনে ক্লিক করুন → "Embed a map" ট্যাব নির্বাচন করুন</li>
+              <li>"Share" → "Embed a map" ট্যাব নির্বাচন করুন</li>
               <li>"COPY HTML" এ ক্লিক করুন</li>
-              <li>কপি করা কোড থেকে শুধু <code className="bg-rose-100 px-1 py-0.5 rounded font-mono">src="..."</code> এর ভেতরের URL টি এখানে পেস্ট করুন</li>
+              <li>কোড থেকে <code className="bg-rose-100 px-1 py-0.5 rounded font-mono text-[11px]">src="..."</code> এর URL পেস্ট করুন</li>
             </ol>
             {form.map_embed_url && (
-              <div className="mt-4 rounded-2xl overflow-hidden border border-rose-200/50 h-[180px]">
+              <div className="mt-3 rounded-lg overflow-hidden border border-rose-200 h-[160px]">
                 <iframe
                   src={form.map_embed_url}
                   width="100%"
@@ -336,7 +317,6 @@ const AdminSettings = () => {
                   allowFullScreen
                   loading="lazy"
                   title="Map Preview"
-                  className="grayscale-[20%]"
                 />
               </div>
             )}
@@ -347,62 +327,54 @@ const AdminSettings = () => {
   ];
 
   return (
-    <div className="space-y-10 pb-20 max-w-[1400px] mx-auto">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-1">
-        <div className="relative group">
-          <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-12 bg-primary rounded-full opacity-40 group-hover:opacity-100 transition-opacity" />
-          <h1 className="text-3xl sm:text-4xl font-black text-primary uppercase tracking-tight flex items-center gap-4">
-            সেটিংস <Settings className="h-8 w-8 animate-[spin_4s_linear_infinite]" />
+    <div className="space-y-6 pb-20 max-w-[1400px] mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Settings className="h-6 w-6 text-primary" />
+            সেটিংস
           </h1>
-          <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px] mt-1 opacity-60">
-            Nilanti Store Configuration & Global Preferences
+          <p className="text-sm text-muted-foreground mt-1">
+            স্টোর কনফিগারেশন ও প্রেফারেন্স
           </p>
         </div>
         
         <Button 
-          className="h-14 px-10 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black uppercase text-xs tracking-[0.1em] shadow-2xl shadow-primary/30 transition-all hover:-translate-y-1 active:scale-95 group"
           onClick={handleSave} 
           disabled={updateSettings.isPending}
+          className="gap-2"
         >
           {updateSettings.isPending ? (
-            <div className="flex items-center gap-3">
+            <>
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span>Checking...</span>
-            </div>
+              সংরক্ষণ হচ্ছে...
+            </>
           ) : (
-            <div className="flex items-center gap-3">
-              <Save className="h-4 w-4 group-hover:scale-120 transition-transform" />
-              <span>সংরক্ষণ করুন</span>
-            </div>
+            <>
+              <Save className="h-4 w-4" />
+              সংরক্ষণ করুন
+            </>
           )}
         </Button>
       </div>
 
       {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {sections.map((section, idx) => (
-          <Card 
-            key={section.id} 
-            className="border-none shadow-xl transition-all duration-500 hover:shadow-2xl group overflow-hidden rounded-[2.5rem] bg-card/60 backdrop-blur-xl border border-white/40 flex flex-col animate-in slide-in-from-bottom-4"
-            style={{ animationDelay: `${idx * 100}ms` }}
-          >
-            <CardHeader className="p-8 pb-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-3 text-primary">
-                    <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-lg", section.bg, section.color)}>
-                      <section.icon className="h-5 w-5" />
-                    </div>
-                    {section.title}
-                  </CardTitle>
-                  <CardDescription className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40 ml-13">
-                    {section.description}
-                  </CardDescription>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {sections.map((section) => (
+          <Card key={section.id} className={cn("border", section.borderColor)}>
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className={cn("p-2 rounded-xl", section.bg)}>
+                  <section.icon className={cn("h-5 w-5", section.color)} />
+                </div>
+                <div>
+                  <CardTitle className="text-lg font-bold">{section.title}</CardTitle>
+                  <CardDescription className="text-xs">{section.description}</CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-8 pt-4 flex-1">
+            <CardContent>
               {section.content}
             </CardContent>
           </Card>
@@ -413,4 +385,3 @@ const AdminSettings = () => {
 };
 
 export default AdminSettings;
-
